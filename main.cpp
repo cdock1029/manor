@@ -1,11 +1,16 @@
+#include "database.h"
 #include "manor.h"
 
 #include <QApplication>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     QApplication a(argc, argv);
-    Manor w;
+
+    if (!createConnection())
+        return EXIT_FAILURE;
+
+    Manor w("properties");
     w.show();
     return a.exec();
 }
