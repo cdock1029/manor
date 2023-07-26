@@ -1,5 +1,6 @@
 #include "manor.h"
 #include "./ui_manor.h"
+#include "propertydialog.h"
 #include <QListView>
 #include <QtLogging>
 
@@ -28,11 +29,22 @@ Manor::Manor(const QString& propertyTable, QWidget* parent)
     propertiesList->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     connect(ui->action_Quit, &QAction::triggered, this, &Manor::quitApp);
+    connect(ui->actionNew_Property, &QAction::triggered, this, &Manor::addProperty);
 }
 
 Manor::~Manor()
 {
     delete ui;
+}
+
+void Manor::addProperty()
+{
+    PropertyDialog* dialog = new PropertyDialog(m_PropertyModel, this);
+    if (dialog->exec()) {
+        qInfo() << "OK";
+    } else {
+        qInfo() << "Cancel";
+    }
 }
 
 void Manor::quitApp()

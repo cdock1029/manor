@@ -21,6 +21,9 @@ qt_add_executable(Manor
     manor.h
     database.h
     manor.ui
+    propertydialog.h
+    propertydialog.cpp
+    propertydialog.ui
 )
 
 target_link_libraries(Manor PRIVATE

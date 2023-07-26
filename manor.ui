@@ -20,23 +20,16 @@
       <property name="title">
        <string>Units</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QComboBox" name="comboBox">
-         <item>
-          <property name="text">
-           <string>Columbiana Manor</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>ACME Acres</string>
-          </property>
-         </item>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QListView" name="propertiesListView">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QListView" name="propertiesListView"/>
        </item>
       </layout>
      </widget>
@@ -50,7 +43,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -80,6 +73,7 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionNew_Property"/>
     <addaction name="action_Quit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -110,6 +104,20 @@
    </property>
    <property name="menuRole">
     <enum>QAction::QuitRole</enum>
+   </property>
+  </action>
+  <action name="actionNew_Property">
+   <property name="icon">
+    <iconset theme="document-new"/>
+   </property>
+   <property name="text">
+    <string>New Property</string>
+   </property>
+   <property name="toolTip">
+    <string>New Property</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::ApplicationSpecificRole</enum>
    </property>
   </action>
  </widget>

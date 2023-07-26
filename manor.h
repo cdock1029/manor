@@ -19,6 +19,7 @@ public:
     ~Manor();
 
 private slots:
+    void addProperty();
     void quitApp();
 
 private:
