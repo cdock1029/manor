@@ -15,15 +15,17 @@ class Manor : public QMainWindow {
     Q_OBJECT
 
 public:
-    Manor(const QString& propertyTable, QWidget* parent = nullptr);
+    explicit Manor(QWidget* parent = nullptr);
     ~Manor();
 
 private slots:
     void addProperty();
+    void change_property(QModelIndex idx);
     void quitApp();
 
 private:
     Ui::Manor* ui;
-    QSqlTableModel* m_PropertyModel;
+    QSqlTableModel* m_property_model;
+    QSqlRelationalTableModel* m_unit_model;
 };
 #endif // MANOR_H

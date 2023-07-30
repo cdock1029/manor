@@ -12,7 +12,7 @@ class PropertyDialog : public QDialog {
     Q_OBJECT
 
 public:
-    PropertyDialog(QSqlTableModel* properties, QWidget* parent = nullptr);
+    explicit PropertyDialog(QSqlTableModel* properties, QWidget* parent = nullptr);
     ~PropertyDialog();
 
 private slots:

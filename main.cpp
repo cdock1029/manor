@@ -7,10 +7,11 @@ int main(int argc, char* argv[])
 {
     QApplication a(argc, argv);
 
-    if (!createConnection())
+    if (!Db::createConnection())
         return EXIT_FAILURE;
 
-    Manor w("properties");
+    Manor w;
     w.show();
+
     return a.exec();
 }

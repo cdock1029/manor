@@ -5,8 +5,8 @@
 
 PropertyDialog::PropertyDialog(QSqlTableModel* properties, QWidget* parent)
     : QDialog(parent)
-    , m_PropertyModel(properties)
     , ui(new Ui::PropertyDialog)
+    , m_PropertyModel(properties)
 {
     ui->setupUi(this);
 
