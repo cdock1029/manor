@@ -20,8 +20,9 @@ public:
 
 private slots:
     void addProperty();
-    void change_property(QModelIndex idx);
+    void change_property(int row);
     void quitApp();
+    void add_unit();
 
 private:
     Ui::Manor* ui;

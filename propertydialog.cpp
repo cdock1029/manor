@@ -1,5 +1,6 @@
 #include "propertydialog.h"
 #include "ui_propertydialog.h"
+#include "shared.h"
 #include <QDialogButtonBox>
 #include <QMessageBox>
 
@@ -45,7 +46,7 @@ int PropertyDialog::addNewProperty(const QString& name)
         ui->propertyNameEdit->clear();
         auto err = m_PropertyModel->lastError();
         qDebug() << "property submit error: " << err;
-        handleError(err.nativeErrorCode());
+        Shared::handle_error(this, err.nativeErrorCode());
         return -1;
     }
     int id = m_PropertyModel->query().lastInsertId().toInt();
@@ -53,13 +54,4 @@ int PropertyDialog::addNewProperty(const QString& name)
     qInfo() << "inserted:" << inserted << ", submitted:" << submitted << ", id:" << id;
 
     return id;
-}
-
-void PropertyDialog::handleError(const QString& code)
-{
-    if (code == SQLITE_CONSTRAINT_UNIQUE) {
-        QMessageBox::warning(this, "Save property", "Property name must be unique. That one already exists.");
-    } else {
-        QMessageBox::warning(this, "Save property", "Unspecified error.");
-    }
 }

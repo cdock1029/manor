@@ -25,8 +25,7 @@ qt_add_executable(
   propertydialog.h
   propertydialog.cpp
   propertydialog.ui
-
-)
+  shared.h)
 
 target_link_libraries(Manor PRIVATE Qt6::Widgets Qt6::Sql)
 
