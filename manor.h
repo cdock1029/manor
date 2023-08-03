@@ -23,6 +23,7 @@ private slots:
     void change_property(int row);
     void quitApp();
     void add_unit();
+    void handle_unit_activated(const QModelIndex &idx);
 
 private:
     Ui::Manor* ui;

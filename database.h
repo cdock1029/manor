@@ -20,25 +20,11 @@ inline bool createConnection()
     QVariantList names{"Columbiana Manor", "Westchester Commons", "Acme Acres"};
     // QVariantList pids{1, 2, 3};
     QVariantList acme_units{
+        "C100",
         "A100",
-        "B100",
-        "C100"
+        "B100"
     };
     QVariantList units{
-        "31-101",
-        "31-102",
-        "31-103",
-        "31-104",
-        "31-105",
-        "31-106",
-        "31-107",
-        "31-108",
-        "31-110",
-        "31-111",
-        "31-112",
-        "31-113",
-        "31-114",
-        "31-115",
         "31-116",
         "31-117",
         "31-118",
@@ -47,6 +33,20 @@ inline bool createConnection()
         "31-203",
         "31-204",
         "31-205",
+        "31-103",
+        "31-104",
+        "31-105",
+        "31-106",
+        "31-107",
+        "31-108",
+        "31-101",
+        "31-102",
+        "31-110",
+        "31-111",
+        "31-112",
+        "31-113",
+        "31-114",
+        "31-115",
         "31-206",
         "31-207",
         "31-208",
@@ -64,6 +64,32 @@ inline bool createConnection()
         "31-302",
         "31-303",
         "31-304"
+    };
+
+    QVariantList commons_units{
+        "4881-1",
+        "4881-2",
+        "4881-3",
+        "4881-4",
+        "4881-5",
+        "4881-6",
+        "4883-1",
+        "4883-2",
+        "4883-3",
+        "4883-4",
+        "4883-5",
+        "4883-6",
+        "4885-1",
+        "4885-2",
+        "4885-3",
+        "4885-4",
+        "4885-5",
+        "4887-1",
+        "4887-2",
+        "4887-3",
+        "4887-4",
+        "4887-5",
+        "4887-6"
     };
 
 
@@ -110,6 +136,12 @@ inline bool createConnection()
         return false;
     }
 
+    units_query.prepare("insert into units (name, property_id) values (?, 2)");
+    units_query.addBindValue(commons_units);
+    if (!units_query.execBatch()){
+        qDebug() << "error commons units setup batch: " << units_query.lastError();
+        return false;
+    }
     return true;
 
 }

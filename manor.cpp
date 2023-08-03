@@ -21,6 +21,8 @@ Manor::Manor(QWidget* parent)
     m_property_model = m_unit_model->relationModel(2);
     m_property_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
 
+    m_unit_model->setSort(1, Qt::AscendingOrder);
+    m_unit_model->setFilter("property_id = -1");
     m_unit_model->select();
 
     qDebug() << "property count: " << m_property_model->rowCount()  << ", unit count: " << m_unit_model->rowCount();
@@ -41,6 +43,7 @@ Manor::Manor(QWidget* parent)
     units_list->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     connect(properties_combo, &QComboBox::currentIndexChanged, this, &Manor::change_property);
+    connect(ui->units_list_view, &QListView::clicked, this, &Manor::handle_unit_activated);
 
     connect(ui->action_Quit, &QAction::triggered, this, &Manor::quitApp);
     connect(ui->actionNew_Property, &QAction::triggered, this, &Manor::addProperty);
@@ -66,6 +69,7 @@ void Manor::change_property(int row)
 {
     auto idx = m_property_model->index(row, 0);
     m_unit_model->setFilter("property_id = " + idx.data().toString());
+    ui->selected_property_label->setText(idx.sibling(row, 1).data().toString());
 }
 
 void Manor::quitApp()
@@ -110,5 +114,12 @@ void Manor::add_unit()
         }
     }
 
+}
+
+
+void Manor::handle_unit_activated(const QModelIndex &idx)
+{
+
+    ui->selected_unit_label->setText(idx.data().toString());
 }
 
