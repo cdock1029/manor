@@ -6,6 +6,7 @@
 #include <QtLogging>
 #include <QSqlRelation>
 #include <QInputDialog>
+#include <QSystemTrayIcon>
 
 Manor::Manor(QWidget* parent)
     : QMainWindow(parent)
@@ -27,6 +28,8 @@ Manor::Manor(QWidget* parent)
 
     qDebug() << "property count: " << m_property_model->rowCount()  << ", unit count: " << m_unit_model->rowCount();
 
+    m_system_tray_icon = new QSystemTrayIcon{this};
+    m_system_tray_icon->show();
 
     ui->setupUi(this);
 
@@ -60,6 +63,7 @@ void Manor::addProperty()
     PropertyDialog* dialog = new PropertyDialog(m_property_model, this);
     if (dialog->exec()) {
         qInfo() << "OK";
+        m_system_tray_icon->showMessage("Property created", "Success!", QSystemTrayIcon::Information, 3000);
     } else {
         qInfo() << "Cancel";
     }
@@ -70,6 +74,7 @@ void Manor::change_property(int row)
     auto idx = m_property_model->index(row, 0);
     m_unit_model->setFilter("property_id = " + idx.data().toString());
     ui->selected_property_label->setText(idx.sibling(row, 1).data().toString());
+    ui->selected_unit_label->setText(QString());
 }
 
 void Manor::quitApp()

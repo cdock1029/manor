@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QSqlRelationalTableModel>
 #include <QSqlTableModel>
+#include <QSystemTrayIcon>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -29,5 +30,6 @@ private:
     Ui::Manor* ui;
     QSqlTableModel* m_property_model;
     QSqlRelationalTableModel* m_unit_model;
+    QSystemTrayIcon* m_system_tray_icon;
 };
 #endif // MANOR_H

@@ -138,10 +138,36 @@ inline bool createConnection()
 
     units_query.prepare("insert into units (name, property_id) values (?, 2)");
     units_query.addBindValue(commons_units);
-    if (!units_query.execBatch()){
+    if (!units_query.execBatch()) {
         qDebug() << "error commons units setup batch: " << units_query.lastError();
         return false;
     }
+
+    QSqlQuery tenants;
+
+    tenants.exec("DROP TABLE IF EXISTS tenants");
+    tenants.exec("CREATE TABLE IF NOT EXISTS tenants ("
+        "id INTEGER,"
+        "first	TEXT NOT NULL COLLATE NOCASE,"
+        "middle	TEXT DEFAULT '' COLLATE NOCASE,"
+        "last	TEXT NOT NULL COLLATE NOCASE,"
+        "email	TEXT UNIQUE COLLATE NOCASE,"
+        "phone	TEXT,"
+        "UNIQUE(last, first, middle),"
+        "PRIMARY KEY(id))"
+    );
+    //QString empty = QString();
+    tenants.prepare("insert into tenants (first, middle, last) values (?, ?, ?)");
+    tenants.addBindValue(QVariantList{"Mona", "Saoirse", "Freya", "Amanda", "Conor"});
+    tenants.addBindValue(QVariantList{"Chungus", "Sersh", "Pipsqueak", "Emma", ""});
+    QString last{"Dockry"};
+    tenants.addBindValue(QVariantList{last, last, last, last, last});
+    // tenants.addBindValue(QVariantList{empty, empty, empty, empty, empty});
+    if (!tenants.execBatch()) {
+        qDebug() << "error tenants setup batch: " << tenants.lastError();
+        return false;
+    }
+
     return true;
 
 }
