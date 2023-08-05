@@ -2,7 +2,7 @@
 #define PROPERTYDIALOG_H
 
 #include <QDialog>
-#include <QtSql>
+#include <QSqlTableModel>
 
 namespace Ui {
 class PropertyDialog;
@@ -15,15 +15,9 @@ public:
     explicit PropertyDialog(QSqlTableModel* properties, QWidget* parent = nullptr);
     ~PropertyDialog();
 
-private slots:
-    void submit();
-
-private:
-    int addNewProperty(const QString& name);
-
 private:
     Ui::PropertyDialog* ui;
-    QSqlTableModel* m_PropertyModel;
+    QSqlTableModel* m_property_model;
 };
 
 #endif // PROPERTYDIALOG_H

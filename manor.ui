@@ -56,14 +56,14 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="movable">
        <bool>false</bool>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>Tab 1</string>
+        <string>PROPERTY</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
@@ -129,10 +129,15 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="tab_tenants">
        <attribute name="title">
-        <string>Tab 2</string>
+        <string>TENANTS</string>
        </attribute>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QTableView" name="tenants_table_view"/>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -151,9 +156,10 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionNew_Property"/>
+    <addaction name="action_new_property"/>
     <addaction name="action_new_unit"/>
-    <addaction name="action_Quit"/>
+    <addaction name="action_new_tenant"/>
+    <addaction name="action_quit"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -168,9 +174,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_Quit"/>
+   <addaction name="action_quit"/>
   </widget>
-  <action name="action_Quit">
+  <action name="action_quit">
    <property name="icon">
     <iconset theme="application-exit">
      <normaloff>.</normaloff>.</iconset>
@@ -185,7 +191,7 @@
     <enum>QAction::QuitRole</enum>
    </property>
   </action>
-  <action name="actionNew_Property">
+  <action name="action_new_property">
    <property name="icon">
     <iconset theme="document-new">
      <normaloff>.</normaloff>.</iconset>
@@ -210,6 +216,15 @@
    </property>
    <property name="toolTip">
     <string>Add unit to selected property</string>
+   </property>
+  </action>
+  <action name="action_new_tenant">
+   <property name="icon">
+    <iconset theme="document-new">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>New Tenant</string>
    </property>
   </action>
  </widget>

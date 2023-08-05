@@ -8,7 +8,6 @@
 
 namespace Db {
 
-
 inline bool createConnection()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -17,14 +16,14 @@ inline bool createConnection()
         QMessageBox::critical(nullptr, "Cannot open database", "Needs SQLite support.", QMessageBox::Cancel);
         return false;
     }
-    QVariantList names{"Columbiana Manor", "Westchester Commons", "Acme Acres"};
+    QVariantList names { "Columbiana Manor", "Westchester Commons", "Acme Acres" };
     // QVariantList pids{1, 2, 3};
-    QVariantList acme_units{
+    QVariantList acme_units {
         "C100",
         "A100",
         "B100"
     };
-    QVariantList units{
+    QVariantList units {
         "31-116",
         "31-117",
         "31-118",
@@ -66,7 +65,7 @@ inline bool createConnection()
         "31-304"
     };
 
-    QVariantList commons_units{
+    QVariantList commons_units {
         "4881-1",
         "4881-2",
         "4881-3",
@@ -92,14 +91,13 @@ inline bool createConnection()
         "4887-6"
     };
 
-
     QSqlQuery properties_query;
 
     properties_query.exec("DROP TABLE IF EXISTS properties");
     properties_query.exec("CREATE TABLE IF NOT EXISTS properties ("
-               "id      INTEGER,"
-               "name	TEXT NOT NULL UNIQUE COLLATE NOCASE,"
-               "PRIMARY KEY(id))");
+                          "id      INTEGER,"
+                          "name	TEXT NOT NULL UNIQUE COLLATE NOCASE,"
+                          "PRIMARY KEY(id))");
 
     properties_query.prepare("INSERT INTO properties (name) VALUES (?)");
     // properties_query.addBindValue(pids);
@@ -114,12 +112,12 @@ inline bool createConnection()
 
     units_query.exec("DROP TABLE IF EXISTS units");
     units_query.exec("CREATE TABLE IF NOT EXISTS units ("
-                    "id	            INTEGER,"
-                    "name	        TEXT NOT NULL COLLATE NOCASE,"
-                    "property_id    INTEGER,"
-                    "UNIQUE(property_id,name),"
-                    "PRIMARY KEY(id),"
-                    "FOREIGN KEY(property_id) REFERENCES properties(id) ON Delete cascade)");
+                     "id	            INTEGER,"
+                     "name	        TEXT NOT NULL COLLATE NOCASE,"
+                     "property_id    INTEGER,"
+                     "UNIQUE(property_id,name),"
+                     "PRIMARY KEY(id),"
+                     "FOREIGN KEY(property_id) REFERENCES properties(id) ON Delete cascade)");
 
     units_query.prepare("INSERT INTO units (name, property_id) VALUES (?, 1)");
     units_query.addBindValue(units);
@@ -147,21 +145,20 @@ inline bool createConnection()
 
     tenants.exec("DROP TABLE IF EXISTS tenants");
     tenants.exec("CREATE TABLE IF NOT EXISTS tenants ("
-        "id INTEGER,"
-        "first	TEXT NOT NULL COLLATE NOCASE,"
-        "middle	TEXT DEFAULT '' COLLATE NOCASE,"
-        "last	TEXT NOT NULL COLLATE NOCASE,"
-        "email	TEXT UNIQUE COLLATE NOCASE,"
-        "phone	TEXT,"
-        "UNIQUE(last, first, middle),"
-        "PRIMARY KEY(id))"
-    );
-    //QString empty = QString();
+                 "id INTEGER,"
+                 "first	TEXT NOT NULL COLLATE NOCASE,"
+                 "middle	TEXT DEFAULT '' COLLATE NOCASE,"
+                 "last	TEXT NOT NULL COLLATE NOCASE,"
+                 "email	TEXT UNIQUE COLLATE NOCASE,"
+                 "phone	TEXT,"
+                 "UNIQUE(last, first, middle),"
+                 "PRIMARY KEY(id))");
+    // QString empty = QString();
     tenants.prepare("insert into tenants (first, middle, last) values (?, ?, ?)");
-    tenants.addBindValue(QVariantList{"Mona", "Saoirse", "Freya", "Amanda", "Conor"});
-    tenants.addBindValue(QVariantList{"Chungus", "Sersh", "Pipsqueak", "Emma", ""});
-    QString last{"Dockry"};
-    tenants.addBindValue(QVariantList{last, last, last, last, last});
+    tenants.addBindValue(QVariantList { "Mona", "Saoirse", "Freya", "Amanda", "Conor" });
+    tenants.addBindValue(QVariantList { "Chungus", "Sersh", "Pipsqueak", "Emma", "" });
+    QString last { "Dockry" };
+    tenants.addBindValue(QVariantList { last, last, last, last, last });
     // tenants.addBindValue(QVariantList{empty, empty, empty, empty, empty});
     if (!tenants.execBatch()) {
         qDebug() << "error tenants setup batch: " << tenants.lastError();
@@ -169,7 +166,6 @@ inline bool createConnection()
     }
 
     return true;
-
 }
 }
 
