@@ -81,6 +81,8 @@ void Manor::setup_tenants_table()
 {
     auto tenants_table = ui->tenants_table_view;
     tenants_table->setModel(m_tenant_model);
+    tenants_table->hideColumn(0);
+    tenants_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 
 void Manor::setup_actions()
@@ -96,6 +98,13 @@ void Manor::setup_actions()
 void Manor::add_property()
 {
     PropertyDialog* dialog = new PropertyDialog { m_property_model, this };
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->open();
+}
+
+void Manor::add_tenant()
+{
+    TenantDialog* dialog = new TenantDialog { m_tenant_model, this };
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->open();
 }
@@ -135,11 +144,4 @@ void Manor::add_unit()
             qInfo() << "inserted:" << inserted << ", submitted:" << submitted << ", new id:" << new_id;
         }
     }
-}
-
-void Manor::add_tenant()
-{
-    TenantDialog* dialog = new TenantDialog { m_tenant_model, this };
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-    dialog->open();
 }

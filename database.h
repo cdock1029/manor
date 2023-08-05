@@ -147,7 +147,7 @@ inline bool createConnection()
     tenants.exec("CREATE TABLE IF NOT EXISTS tenants ("
                  "id INTEGER,"
                  "first	TEXT NOT NULL COLLATE NOCASE,"
-                 "middle	TEXT DEFAULT '' COLLATE NOCASE,"
+                 "middle TEXT NOT NULL DEFAULT '' COLLATE NOCASE,"
                  "last	TEXT NOT NULL COLLATE NOCASE,"
                  "email	TEXT UNIQUE COLLATE NOCASE,"
                  "phone	TEXT,"
