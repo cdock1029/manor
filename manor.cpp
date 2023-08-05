@@ -8,10 +8,6 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
-#include <QTableView>
-// #include <QListView>
-// #include <QSqlRelation>
-// #include <QtLogging>
 
 Manor::Manor(QWidget* parent)
     : QMainWindow(parent)
@@ -79,8 +75,12 @@ void Manor::setup_units_list()
 
 void Manor::setup_tenants_table()
 {
+    for (int i = 0; i < m_tenant_model->columnCount(); ++i) {
+        m_tenant_model->setHeaderData(i, Qt::Horizontal, m_tenant_model->headerData(i, Qt::Horizontal).toString().toUpper());
+    }
     auto tenants_table = ui->tenants_table_view;
     tenants_table->setModel(m_tenant_model);
+    tenants_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tenants_table->hideColumn(0);
     tenants_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
@@ -93,6 +93,24 @@ void Manor::setup_actions()
     connect(ui->action_new_property, &QAction::triggered, this, &Manor::add_property);
     connect(ui->action_new_unit, &QAction::triggered, this, &Manor::add_unit);
     connect(ui->action_new_tenant, &QAction::triggered, this, &Manor::add_tenant);
+
+    connect(ui->action_delete_property, &QAction::triggered, this, [this]() {
+        auto current = ui->properties_combo->currentIndex();
+        if (current == -1) {
+            QMessageBox::information(this, "Delete Property", "Select the Property you want to delete");
+        } else {
+            auto idx = m_property_model->index(current, 0);
+            auto name = idx.sibling(idx.row(), 1).data().toString();
+            auto button = QMessageBox::question(this, "Delete Property", QString("Are you sure you want to"
+                                                                                 "delete '%1' ?")
+                                                                             .arg(name),
+                QMessageBox::Yes | QMessageBox::No);
+            if (button == QMessageBox::Yes) {
+                m_property_model->removeRow(idx.row());
+                m_property_model->submitAll();
+            }
+        }
+    });
 }
 
 void Manor::add_property()

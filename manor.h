@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QSqlRelationalTableModel>
 #include <QSqlTableModel>
-#include <QSystemTrayIcon>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

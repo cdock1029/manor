@@ -1,9 +1,7 @@
 #include "tenantdialog.h"
 #include "shared.h"
 #include "ui_tenantdialog.h"
-#include <QDialogButtonBox>
 #include <QLineEdit>
-#include <QMessageBox>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
@@ -14,7 +12,6 @@ TenantDialog::TenantDialog(QSqlTableModel* tenants, QWidget* parent)
     , m_tenants_model(tenants)
 {
     ui->setupUi(this);
-
     connect(ui->button_box, &QDialogButtonBox::accepted, this, [this]() {
         QString first, middle, last;
 

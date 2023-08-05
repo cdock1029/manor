@@ -161,7 +161,14 @@
     <addaction name="action_new_tenant"/>
     <addaction name="action_quit"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="action_delete_property"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -225,6 +232,14 @@
    </property>
    <property name="text">
     <string>New Tenant</string>
+   </property>
+  </action>
+  <action name="action_delete_property">
+   <property name="icon">
+    <iconset theme="edit-delete"/>
+   </property>
+   <property name="text">
+    <string>Delete Property</string>
    </property>
   </action>
  </widget>
