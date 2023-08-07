@@ -56,7 +56,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="movable">
        <bool>false</bool>
@@ -159,6 +159,7 @@
     <addaction name="action_new_property"/>
     <addaction name="action_new_unit"/>
     <addaction name="action_new_tenant"/>
+    <addaction name="action_New_Lease"/>
     <addaction name="action_quit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -209,9 +210,6 @@
    <property name="toolTip">
     <string>New Property</string>
    </property>
-   <property name="menuRole">
-    <enum>QAction::ApplicationSpecificRole</enum>
-   </property>
   </action>
   <action name="action_new_unit">
    <property name="icon">
@@ -236,10 +234,22 @@
   </action>
   <action name="action_delete_property">
    <property name="icon">
-    <iconset theme="edit-delete"/>
+    <iconset theme="edit-delete">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Delete Property</string>
+   </property>
+  </action>
+  <action name="action_New_Lease">
+   <property name="icon">
+    <iconset theme="document-new"/>
+   </property>
+   <property name="text">
+    <string>New Lease</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+L</string>
    </property>
   </action>
  </widget>

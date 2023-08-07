@@ -165,6 +165,25 @@ inline bool createConnection()
         return false;
     }
 
+    QSqlQuery leases;
+    bool valid;
+    valid = leases.exec("DROP TABLE IF EXISTS leases");
+    valid = valid && leases.exec("CREATE TABLE IF NOT EXISTS leases ("
+                                 "id	        INTEGER,"
+                                 "start	    TEXT NOT NULL CHECK(date(start) = start),"
+                                 "end	    TEXT NOT NULL CHECK(date(end) = end),"
+                                 "rent	    NUMERIC NOT NULL CHECK(rent > 0),"
+                                 "security	NUMERIC,"
+                                 "unit_id	INTEGER NOT NULL,"
+                                 "tenant_id	INTEGER NOT NULL,"
+                                 "FOREIGN KEY(tenant_id) REFERENCES tenants(id) on delete cascade,"
+                                 "FOREIGN KEY(unit_id) REFERENCES units(id) on delete cascade,"
+                                 "PRIMARY KEY(id))");
+    if (!valid) {
+        qDebug() << "error leases setup: " << leases.lastError();
+        return false;
+    }
+
     return true;
 }
 }
