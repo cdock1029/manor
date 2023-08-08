@@ -1,8 +1,10 @@
 #include "manor.h"
 #include "./ui_manor.h"
+#include "leasewizard.h"
 #include "propertydialog.h"
 #include "shared.h"
 #include "tenantdialog.h"
+#include <QDoubleSpinBox>
 #include <QInputDialog>
 #include <QItemSelection>
 #include <QSqlError>
@@ -114,23 +116,11 @@ void Manor::setup_actions()
     });
 
     connect(ui->action_New_Lease, &QAction::triggered, this, [this]() {
-        QWizard* wizard = new QWizard { this };
-        wizard->setAttribute(Qt::WA_DeleteOnClose);
-        auto build_pg = [](int i) -> QWizardPage* {
-            QWizardPage* page = new QWizardPage;
-            page->setTitle(QString("Page %1").arg(i));
-            QLabel* label = new QLabel(QString("Page %1 of wizard").arg(i));
-            label->setWordWrap(true);
-            QVBoxLayout* layout = new QVBoxLayout;
-            layout->addWidget(label);
-            page->setLayout(layout);
-            return page;
-        };
-        wizard->addPage(build_pg(1));
-        wizard->addPage(build_pg(2));
-        wizard->addPage(build_pg(3));
-        wizard->setWindowTitle("New Tenant");
-        wizard->show();
+        LeaseWizard* wizard = new LeaseWizard { this };
+        // wizard->setField(LeaseWizard::PROPERTY_FIELD, QVariant::fromValue(ComboPair("Acme acres", 100)));
+        // wizard->setCurrentId(1);
+
+        wizard->open();
     });
 }
 

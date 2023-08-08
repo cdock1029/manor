@@ -26,7 +26,12 @@ qt_add_executable(
   propertydialog.cpp
   propertydialog.ui
   shared.h
-  tenantdialog.h tenantdialog.cpp tenantdialog.ui)
+  tenantdialog.h
+  tenantdialog.cpp
+  tenantdialog.ui
+  leasewizard.h leasewizard.cpp)
+
+qt_add_resources(Manor "images" PREFIX "/" FILES images/napoleon1.png)
 
 target_link_libraries(Manor PRIVATE Qt6::Widgets Qt6::Sql)
 
