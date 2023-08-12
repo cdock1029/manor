@@ -6,12 +6,6 @@
 #include <QStringLiteral>
 #include <QWizard>
 
-struct ComboPair {
-    QString name;
-    int id;
-};
-Q_DECLARE_METATYPE(ComboPair)
-
 class LeaseWizard : public QWizard {
     Q_OBJECT
 public:

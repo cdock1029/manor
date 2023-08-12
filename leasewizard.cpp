@@ -1,9 +1,13 @@
 #include "leasewizard.h"
 
 #include <QGridLayout>
+#include <QSqlQueryModel>
+#include <QSqlRecord>
 
 const QString LeaseWizard::PROPERTY_FIELD = QStringLiteral(u"property_selection");
 const QString LeaseWizard::UNIT_FIELD = QStringLiteral(u"unit_selection");
+
+using ComboPair = QPair<QString, int>;
 
 LeaseWizard::LeaseWizard(QWidget* parent)
     : QWizard(parent)
@@ -28,9 +32,15 @@ PropertyPage::PropertyPage(QWidget* parent)
 
     m_properties = new QComboBox;
     m_properties->setPlaceholderText("Choose property");
-    std::vector<ComboPair> items = { { "Acme acres", 100 }, { "Middle Earth", 200 }, { "Rainbow bridge", 300 } };
-    for (auto& item : items) {
-        m_properties->insertItem((int)items.size(), item.name, QVariant::fromValue(item));
+
+    QSqlQueryModel* properties = new QSqlQueryModel;
+    properties->setQuery(QStringLiteral(u"SELECT id, name FROM properties order by name asc"));
+
+    const int count = properties->rowCount();
+    for (int i = 0; i < count; ++i) {
+        auto id = properties->record(i).value(0).toInt();
+        auto name = properties->record(i).value(1).toString();
+        m_properties->insertItem(count, name, QVariant::fromValue(ComboPair { name, id }));
     }
 
     registerField(LeaseWizard::PROPERTY_FIELD + "*", m_properties);
@@ -50,10 +60,6 @@ UnitPage::UnitPage(QWidget* parent)
 
     m_units = new QComboBox;
     m_units->setPlaceholderText("Choose unit");
-    std::vector<ComboPair> items = { { "A-101", 111 }, { "B-202", 222 }, { "C-303", 333 } };
-    for (auto& item : items) {
-        m_units->insertItem((int)items.size(), item.name, QVariant::fromValue(item));
-    }
 
     registerField(LeaseWizard::UNIT_FIELD + "*", m_units);
 
@@ -66,7 +72,19 @@ UnitPage::UnitPage(QWidget* parent)
 void UnitPage::initializePage()
 {
     ComboPair property = field(LeaseWizard::PROPERTY_FIELD).value<ComboPair>();
-    m_selected_property->setText(property.name);
+
+    QSqlQueryModel* units = new QSqlQueryModel;
+    auto sql = QString("SELECT id, name FROM units where property_id = %1 order by name asc").arg(property.second);
+    units->setQuery(sql);
+
+    const int count = units->rowCount();
+    for (int i = 0; i < count; ++i) {
+        auto id = units->record(i).value(0).toInt();
+        auto name = units->record(i).value(1).toString();
+        m_units->insertItem(count, name, QVariant::fromValue(ComboPair { name, id }));
+    }
+
+    m_selected_property->setText(property.first);
 }
 
 FinalPage::FinalPage(QWidget* parent)
@@ -88,6 +106,6 @@ void FinalPage::initializePage()
 {
     auto property = field(LeaseWizard::PROPERTY_FIELD).value<ComboPair>();
     auto unit = field(LeaseWizard::UNIT_FIELD).value<ComboPair>();
-    m_selected_property->setText(property.name);
-    m_selected_unit->setText(unit.name);
+    m_selected_property->setText(property.first);
+    m_selected_unit->setText(unit.first);
 }
