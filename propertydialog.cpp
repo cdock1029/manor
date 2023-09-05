@@ -12,6 +12,7 @@ PropertyDialog::PropertyDialog(QSqlTableModel* properties, QWidget* parent)
     , ui(new Ui::PropertyDialog)
     , m_property_model(properties)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
 
     connect(ui->property_btn_box, &QDialogButtonBox::accepted, this, [this]() {
@@ -23,7 +24,7 @@ PropertyDialog::PropertyDialog(QSqlTableModel* properties, QWidget* parent)
             auto record = m_property_model->record();
 
             record.setGenerated(0, false);
-            record.setValue(1, QVariant(propertyName.trimmed()));
+            record.setValue(1, propertyName.trimmed());
 
             m_property_model->insertRecord(-1, record);
             bool submitted = m_property_model->submitAll();

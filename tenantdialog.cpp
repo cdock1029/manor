@@ -1,4 +1,5 @@
 #include "tenantdialog.h"
+#include "database.h"
 #include "shared.h"
 #include "ui_tenantdialog.h"
 #include <QLineEdit>
@@ -11,6 +12,7 @@ TenantDialog::TenantDialog(QSqlTableModel* tenants, QWidget* parent)
     , ui(new Ui::TenantDialog)
     , m_tenants_model(tenants)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
     ui->setupUi(this);
     connect(ui->button_box, &QDialogButtonBox::accepted, this, [this]() {
         QString first, middle, last;
@@ -23,17 +25,17 @@ TenantDialog::TenantDialog(QSqlTableModel* tenants, QWidget* parent)
             QMessageBox::warning(this, "Tenant error", "First and Last name are required");
         } else {
             auto record = m_tenants_model->record();
-            record.setGenerated(0, false);
-            record.setValue(1, first);
+            record.setGenerated(Db::TENANT_ID, false);
+            record.setValue(Db::TENANT_FIRST, first);
             if (middle.isEmpty()) {
-                record.setGenerated(2, false);
+                record.setGenerated(Db::TENANT_MIDDLE, false);
             } else {
-                record.setValue(2, middle);
+                record.setValue(Db::TENANT_MIDDLE, middle);
             }
 
-            record.setValue(3, last);
-            record.setNull(4);
-            record.setNull(5);
+            record.setValue(Db::TENANT_LAST, last);
+            record.setNull(Db::TENANT_EMAIL);
+            record.setNull(Db::TENANT_PHONE);
             m_tenants_model->insertRecord(-1, record);
             bool submitted = m_tenants_model->submitAll();
             auto new_id = m_tenants_model->query().lastInsertId().toInt();

@@ -3,6 +3,7 @@
 
 #include <QComboBox>
 #include <QLabel>
+#include <QPointer>
 #include <QStringLiteral>
 #include <QWizard>
 
@@ -20,7 +21,7 @@ public:
     explicit PropertyPage(QWidget* parent = nullptr);
 
 private:
-    QComboBox* m_properties;
+    QPointer<QComboBox> m_properties;
 };
 
 class UnitPage : public QWizardPage {
@@ -29,8 +30,8 @@ public:
     explicit UnitPage(QWidget* parent = nullptr);
 
 private:
-    QComboBox* m_units;
-    QLabel* m_selected_property;
+    QPointer<QComboBox> m_units;
+    QPointer<QLabel> m_selected_property;
 
     // QWizardPage interface
 public:
@@ -43,8 +44,8 @@ public:
     explicit FinalPage(QWidget* parent = nullptr);
 
 private:
-    QLabel* m_selected_property;
-    QLabel* m_selected_unit;
+    QPointer<QLabel> m_selected_property;
+    QPointer<QLabel> m_selected_unit;
 
     // QWizardPage interface
 public:

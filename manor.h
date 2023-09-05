@@ -2,6 +2,7 @@
 #define MANOR_H
 
 #include <QMainWindow>
+#include <QPointer>
 #include <QSqlRelationalTableModel>
 #include <QSqlTableModel>
 
@@ -11,12 +12,12 @@ class Manor;
 }
 QT_END_NAMESPACE
 
-class Manor : public QMainWindow {
+class Manor : public QMainWindow { // NOLINT(cppcoreguidelines-special-member-functions)
     Q_OBJECT
 
 public:
     explicit Manor(QWidget* parent = nullptr);
-    ~Manor();
+    ~Manor() override;
 
 private slots:
     void add_property();
@@ -31,8 +32,8 @@ private:
 
 private:
     Ui::Manor* ui;
-    QSqlTableModel* m_property_model;
-    QSqlRelationalTableModel* m_unit_model;
-    QSqlTableModel* m_tenant_model;
+    QPointer<QSqlRelationalTableModel> m_unit_model;
+    QPointer<QSqlTableModel> m_property_model;
+    QPointer<QSqlTableModel> m_tenant_model;
 };
 #endif // MANOR_H

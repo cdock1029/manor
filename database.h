@@ -8,10 +8,25 @@
 
 namespace Db {
 
+inline constexpr int PROPERTY_ID = 0;
+inline constexpr int PROPERTY_NAME = 1;
+
+inline constexpr int UNIT_ID = 0;
+inline constexpr int UNIT_NAME = 1;
+inline constexpr int UNIT_PROPERTY_ID = 2;
+
+inline constexpr int TENANT_ID = 0;
+inline constexpr int TENANT_FIRST = 1;
+inline constexpr int TENANT_MIDDLE = 2;
+inline constexpr int TENANT_LAST = 3;
+inline constexpr int TENANT_EMAIL = 4;
+inline constexpr int TENANT_PHONE = 5;
+
 inline bool createConnection()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(":memory:");
+    // db.setDatabaseName(":memory:");
+    db.setDatabaseName("manor.db");
     if (!db.open()) {
         QMessageBox::critical(nullptr, "Cannot open database", "Needs SQLite support.", QMessageBox::Cancel);
         return false;
@@ -166,8 +181,7 @@ inline bool createConnection()
     }
 
     QSqlQuery leases;
-    bool valid;
-    valid = leases.exec("DROP TABLE IF EXISTS leases");
+    bool valid = leases.exec("DROP TABLE IF EXISTS leases");
     valid = valid && leases.exec("CREATE TABLE IF NOT EXISTS leases ("
                                  "id	        INTEGER,"
                                  "start	    TEXT NOT NULL CHECK(date(start) = start),"

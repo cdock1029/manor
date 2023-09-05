@@ -13,7 +13,7 @@ class TenantDialog : public QDialog {
 
 public:
     explicit TenantDialog(QSqlTableModel* tenants, QWidget* parent = nullptr);
-    ~TenantDialog();
+    ~TenantDialog() override;
 
 private:
     Ui::TenantDialog* ui;

@@ -19,21 +19,21 @@ LeaseWizard::LeaseWizard(QWidget* parent)
 
     setDefaultProperty("QComboBox", "currentData", SIGNAL(currentIndexChanged(int)));
 
-    addPage(new PropertyPage);
-    addPage(new UnitPage);
-    addPage(new FinalPage);
+    addPage(new PropertyPage { this }); // NOLINT
+    addPage(new UnitPage { this });
+    addPage(new FinalPage { this });
 }
 
 PropertyPage::PropertyPage(QWidget* parent)
     : QWizardPage(parent)
+    , m_properties { new QComboBox { this } }
 {
     setTitle("Property selection");
     setSubTitle("Select a property for the lease");
 
-    m_properties = new QComboBox;
     m_properties->setPlaceholderText("Choose property");
 
-    QSqlQueryModel* properties = new QSqlQueryModel;
+    auto properties = QPointer { new QSqlQueryModel { this } };
     properties->setQuery(QStringLiteral(u"SELECT id, name FROM properties order by name asc"));
 
     const int count = properties->rowCount();
@@ -45,25 +45,24 @@ PropertyPage::PropertyPage(QWidget* parent)
 
     registerField(LeaseWizard::PROPERTY_FIELD + "*", m_properties);
 
-    QGridLayout* layout = new QGridLayout;
+    auto layout = QPointer { new QGridLayout { this } };
     layout->addWidget(m_properties);
     setLayout(layout);
 }
 
 UnitPage::UnitPage(QWidget* parent)
     : QWizardPage(parent)
+    , m_units { new QComboBox { this } }
+    , m_selected_property { new QLabel { this } }
 {
     setTitle("Unit selection");
     setSubTitle("Select the unit for the lease");
 
-    m_selected_property = new QLabel;
-
-    m_units = new QComboBox;
     m_units->setPlaceholderText("Choose unit");
 
     registerField(LeaseWizard::UNIT_FIELD + "*", m_units);
 
-    QGridLayout* layout = new QGridLayout;
+    auto layout = QPointer { new QGridLayout { this } };
     layout->addWidget(m_selected_property);
     layout->addWidget(m_units);
     setLayout(layout);
@@ -73,7 +72,7 @@ void UnitPage::initializePage()
 {
     ComboPair property = field(LeaseWizard::PROPERTY_FIELD).value<ComboPair>();
 
-    QSqlQueryModel* units = new QSqlQueryModel;
+    auto units = QPointer { new QSqlQueryModel { this } };
     auto sql = QString("SELECT id, name FROM units where property_id = %1 order by name asc").arg(property.second);
     units->setQuery(sql);
 
@@ -89,14 +88,13 @@ void UnitPage::initializePage()
 
 FinalPage::FinalPage(QWidget* parent)
     : QWizardPage(parent)
+    , m_selected_property { new QLabel { this } }
+    , m_selected_unit { new QLabel { this } }
 {
     setTitle("Summary");
     setSubTitle("Confirm details of lease");
 
-    m_selected_property = new QLabel;
-    m_selected_unit = new QLabel;
-
-    QGridLayout* layout = new QGridLayout;
+    auto layout = QPointer { new QGridLayout { this } };
     layout->addWidget(m_selected_property);
     layout->addWidget(m_selected_unit);
     setLayout(layout);
