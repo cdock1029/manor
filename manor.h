@@ -12,7 +12,7 @@ class Manor;
 }
 QT_END_NAMESPACE
 
-class Manor : public QMainWindow { // NOLINT(cppcoreguidelines-special-member-functions)
+class Manor : public QMainWindow {
     Q_OBJECT
 
 public:

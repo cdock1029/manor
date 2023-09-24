@@ -11,6 +11,9 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS
+    "-Wall -Wextra -Wconversion -Wshadow -Wpedantic -fsanitize=undefined,address"
+)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Sql)
 
@@ -29,7 +32,8 @@ qt_add_executable(
   tenantdialog.h
   tenantdialog.cpp
   tenantdialog.ui
-  leasewizard.h leasewizard.cpp)
+  leasewizard.h
+  leasewizard.cpp)
 
 qt_add_resources(Manor "images" PREFIX "/" FILES images/napoleon1.png)
 

@@ -254,9 +254,6 @@
    </property>
   </action>
   <action name="action_delete_tenant">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset theme="edit-delete">
      <normaloff>.</normaloff>.</iconset>
