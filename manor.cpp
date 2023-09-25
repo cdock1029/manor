@@ -11,6 +11,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QStackedWidget>
 #include <QWizard>
 
 Manor::Manor(QWidget* parent)
@@ -37,6 +38,7 @@ Manor::Manor(QWidget* parent)
 
     ui->setupUi(this);
 
+    setup_stack();
     setup_properties_combo();
     setup_units_list();
     setup_tenants_table();
@@ -46,6 +48,17 @@ Manor::Manor(QWidget* parent)
 Manor::~Manor()
 {
     delete ui;
+}
+
+void Manor::setup_stack()
+{
+    ui->page_combo->addItem(QStringLiteral("Page 1"));
+    ui->page_combo->addItem(QStringLiteral("Page 2"));
+
+    ui->stackedWidget->setCurrentIndex(0);
+    ui->page_combo->setCurrentIndex(0);
+
+    connect(ui->page_combo, &QComboBox::activated, ui->stackedWidget, &QStackedWidget::setCurrentIndex);
 }
 
 void Manor::setup_properties_combo()

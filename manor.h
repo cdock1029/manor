@@ -25,6 +25,7 @@ private slots:
     void add_tenant();
 
 private:
+    void setup_stack();
     void setup_properties_combo();
     void setup_units_list();
     void setup_tenants_table();
