@@ -25,20 +25,22 @@ inline constexpr int TENANT_PHONE = 5;
 inline bool createConnection()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    // db.setDatabaseName(":memory:");
-    db.setDatabaseName("manor.db");
+    db.setDatabaseName(":memory:");
+    // db.setDatabaseName("manor.db");
     if (!db.open()) {
         QMessageBox::critical(nullptr, "Cannot open database", "Needs SQLite support.", QMessageBox::Cancel);
         return false;
     }
-    QVariantList names { "Columbiana Manor", "Westchester Commons", "Acme Acres" };
-    // QVariantList pids{1, 2, 3};
-    QVariantList acme_units {
+    QVariantList names { "Columbiana Manor", "WT Investments" };
+    QVariantList wt_units {
         "C100",
         "A100",
-        "B100"
+        "B100",
+        "D200",
+        "F333",
+        "E202"
     };
-    QVariantList units {
+    QVariantList colubiana_units {
         "31-116",
         "31-117",
         "31-118",
@@ -80,32 +82,6 @@ inline bool createConnection()
         "31-304"
     };
 
-    QVariantList commons_units {
-        "4881-1",
-        "4881-2",
-        "4881-3",
-        "4881-4",
-        "4881-5",
-        "4881-6",
-        "4883-1",
-        "4883-2",
-        "4883-3",
-        "4883-4",
-        "4883-5",
-        "4883-6",
-        "4885-1",
-        "4885-2",
-        "4885-3",
-        "4885-4",
-        "4885-5",
-        "4887-1",
-        "4887-2",
-        "4887-3",
-        "4887-4",
-        "4887-5",
-        "4887-6"
-    };
-
     QSqlQuery properties_query;
 
     properties_query.exec("DROP TABLE IF EXISTS properties");
@@ -135,24 +111,17 @@ inline bool createConnection()
                      "FOREIGN KEY(property_id) REFERENCES properties(id) ON Delete cascade)");
 
     units_query.prepare("INSERT INTO units (name, property_id) VALUES (?, 1)");
-    units_query.addBindValue(units);
+    units_query.addBindValue(colubiana_units);
 
     if (!units_query.execBatch()) {
         qDebug() << "error units setup batch: " << units_query.lastError();
         return false;
     }
 
-    units_query.prepare("INSERT INTO units (name, property_id) VALUES (?, 3)");
-    units_query.addBindValue(acme_units);
+    units_query.prepare("INSERT INTO units (name, property_id) VALUES (?, 2)");
+    units_query.addBindValue(wt_units);
     if (!units_query.execBatch()) {
         qDebug() << "error acme units setup batch: " << units_query.lastError();
-        return false;
-    }
-
-    units_query.prepare("insert into units (name, property_id) values (?, 2)");
-    units_query.addBindValue(commons_units);
-    if (!units_query.execBatch()) {
-        qDebug() << "error commons units setup batch: " << units_query.lastError();
         return false;
     }
 

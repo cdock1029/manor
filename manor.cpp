@@ -39,6 +39,7 @@ Manor::Manor(QWidget* parent)
     ui->setupUi(this);
 
     setup_stack();
+    setup_property_tabs();
     setup_properties_combo();
     setup_units_list();
     setup_tenants_table();
@@ -52,13 +53,29 @@ Manor::~Manor()
 
 void Manor::setup_stack()
 {
-    ui->page_combo->addItem(QStringLiteral("Page 1"));
-    ui->page_combo->addItem(QStringLiteral("Page 2"));
+    ui->page_combo->addItem(QStringLiteral("Properties"));
+    ui->page_combo->addItem(QStringLiteral("Tenants"));
 
     ui->stackedWidget->setCurrentIndex(0);
     ui->page_combo->setCurrentIndex(0);
 
     connect(ui->page_combo, &QComboBox::activated, ui->stackedWidget, &QStackedWidget::setCurrentIndex);
+}
+
+void Manor::setup_property_tabs()
+{
+    QSqlQuery query { QStringLiteral("SELECT * from properties") };
+    int field_no = query.record().indexOf(QStringLiteral("name"));
+    while (query.next()) {
+        auto name = query.value(field_no).toString();
+        auto page = new QWidget {};
+        auto layout = new QVBoxLayout {};
+        auto label = new QLabel { name };
+        layout->addWidget(label);
+        layout->addStretch(1);
+        page->setLayout(layout);
+        ui->tabWidget->addTab(page, name.toUpper());
+    }
 }
 
 void Manor::setup_properties_combo()
@@ -72,8 +89,6 @@ void Manor::setup_properties_combo()
     connect(properties_combo, &QComboBox::currentIndexChanged, this, [this](int row) {
         const auto idx = m_property_model->index(row, 0);
         m_unit_model->setFilter("property_id = " + idx.data().toString());
-        ui->selected_property_label->setText(idx.sibling(row, 1).data().toString());
-        ui->selected_unit_label->setText(QString());
     });
 }
 
@@ -84,10 +99,6 @@ void Manor::setup_units_list()
     units_list->setModel(m_unit_model);
     units_list->setModelColumn(1);
     units_list->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-    connect(units_list->selectionModel(), &QItemSelectionModel::currentChanged, this, [this](const QModelIndex& curr, [[maybe_unused]] const QModelIndex& prev) {
-        ui->selected_unit_label->setText(curr.data().toString());
-    });
 }
 
 void Manor::setup_tenants_table()

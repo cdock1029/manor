@@ -12,7 +12,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS
-    "-Wall -Wextra -Wconversion -Wshadow -Wpedantic -Werror -fsanitize=undefined,address"
+    "-Wall -Wextra -Wconversion -Wshadow -Wpedantic -fsanitize=undefined,address"
 )
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Sql)
