@@ -22,11 +22,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QComboBox" name="properties_combo">
-         <property name="placeholderText">
-          <string/>
-         </property>
-        </widget>
+        <widget class="QComboBox" name="page_combo"/>
        </item>
        <item>
         <widget class="QListView" name="units_list_view">
@@ -38,16 +34,13 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QComboBox" name="page_combo"/>
-       </item>
       </layout>
      </widget>
     </item>
     <item row="0" column="1">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page_1">
        <layout class="QGridLayout" name="gridLayout_3">
@@ -85,7 +78,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QTableView" name="tenants_table_view"/>
+         <widget class="QTableView" name="tenants_table_view">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

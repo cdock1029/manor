@@ -11,6 +11,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QSqlRelationalDelegate>
 #include <QStackedWidget>
 #include <QWizard>
 
@@ -28,7 +29,8 @@ Manor::Manor(QWidget* parent)
     m_property_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
 
     m_unit_model->setSort(Db::UNIT_NAME, Qt::AscendingOrder);
-    m_unit_model->setFilter("property_id = -1");
+    // load units for first property
+    m_unit_model->setFilter("property_id = " + m_property_model->index(0, 0).data().toString());
     m_unit_model->select();
 
     m_tenant_model->setTable("tenants");
@@ -40,8 +42,6 @@ Manor::Manor(QWidget* parent)
 
     setup_stack();
     setup_property_tabs();
-    setup_properties_combo();
-    setup_units_list();
     setup_tenants_table();
     setup_actions();
 }
@@ -70,35 +70,21 @@ void Manor::setup_property_tabs()
         auto name = query.value(field_no).toString();
         auto page = new QWidget {};
         auto layout = new QVBoxLayout {};
-        auto label = new QLabel { name };
-        layout->addWidget(label);
-        layout->addStretch(1);
+        auto table = new QTableView {};
+        table->setModel(m_unit_model);
+        table->setItemDelegate(new QSqlRelationalDelegate { table });
+        table->hideColumn(0);
+        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        table->verticalHeader()->setVisible(false);
+
+        layout->addWidget(table);
         page->setLayout(layout);
         ui->tabWidget->addTab(page, name.toUpper());
     }
-}
-
-void Manor::setup_properties_combo()
-{
-    const auto properties_combo = ui->properties_combo;
-    properties_combo->setModel(m_property_model);
-    properties_combo->setModelColumn(1);
-    properties_combo->setPlaceholderText("Select a Property");
-    properties_combo->setCurrentIndex(-1);
-
-    connect(properties_combo, &QComboBox::currentIndexChanged, this, [this](int row) {
-        const auto idx = m_property_model->index(row, 0);
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int tab) {
+        const auto idx = m_property_model->index(tab, 0);
         m_unit_model->setFilter("property_id = " + idx.data().toString());
     });
-}
-
-void Manor::setup_units_list()
-{
-    const auto units_list = ui->units_list_view;
-    units_list->setViewMode(QListView::ListMode);
-    units_list->setModel(m_unit_model);
-    units_list->setModelColumn(1);
-    units_list->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
 void Manor::setup_tenants_table()
@@ -144,7 +130,7 @@ void Manor::setup_actions()
     connect(ui->action_new_tenant, &QAction::triggered, this, &Manor::add_tenant);
 
     connect(ui->action_delete_property, &QAction::triggered, this, [=, this]() {
-        const auto current = ui->properties_combo->currentIndex();
+        const auto current = ui->tabWidget->currentIndex();
         if (current == -1) {
             QMessageBox::information(this, "Delete Property", "Select the Property you want to delete");
         } else {
@@ -181,7 +167,7 @@ void Manor::add_tenant()
 
 void Manor::add_unit()
 {
-    auto combo_index = ui->properties_combo->currentIndex();
+    auto combo_index = ui->tabWidget->currentIndex();
     // check if property selected
     if (combo_index >= 0) {
         // dialog for text input
