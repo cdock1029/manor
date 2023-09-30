@@ -1,5 +1,4 @@
-#ifndef DATABASE_H
-#define DATABASE_H
+#pragma once
 
 #include <QMessageBox>
 #include <QSqlDatabase>
@@ -170,5 +169,3 @@ inline bool createConnection()
     return true;
 }
 }
-
-#endif // DATABASE_H

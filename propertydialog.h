@@ -1,5 +1,4 @@
-#ifndef PROPERTYDIALOG_H
-#define PROPERTYDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QSqlTableModel>
@@ -19,5 +18,3 @@ private:
     Ui::PropertyDialog* ui;
     QSqlTableModel* m_property_model;
 };
-
-#endif // PROPERTYDIALOG_H

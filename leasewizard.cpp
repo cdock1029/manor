@@ -4,8 +4,8 @@
 #include <QSqlQueryModel>
 #include <QSqlRecord>
 
-const QString LeaseWizard::PROPERTY_FIELD = QStringLiteral(u"property_selection");
-const QString LeaseWizard::UNIT_FIELD = QStringLiteral(u"unit_selection");
+const QString LeaseWizard::PROPERTY_FIELD = u"property_selection"_qs;
+const QString LeaseWizard::UNIT_FIELD = u"unit_selection"_qs;
 
 using ComboPair = QPair<QString, int>;
 
@@ -34,7 +34,7 @@ PropertyPage::PropertyPage(QWidget* parent)
     m_properties->setPlaceholderText("Choose property");
 
     auto properties = QPointer { new QSqlQueryModel { this } };
-    properties->setQuery(QStringLiteral(u"SELECT id, name FROM properties order by name asc"));
+    properties->setQuery(u"SELECT id, name FROM properties order by name asc"_qs);
 
     const int count = properties->rowCount();
     for (int i = 0; i < count; ++i) {
@@ -73,7 +73,7 @@ void UnitPage::initializePage()
     ComboPair property = field(LeaseWizard::PROPERTY_FIELD).value<ComboPair>();
 
     auto units = QPointer { new QSqlQueryModel { this } };
-    auto sql = QString("SELECT id, name FROM units where property_id = %1 order by name asc").arg(property.second);
+    auto sql = QString(u"SELECT id, name FROM units where property_id = %1 order by name asc"_qs).arg(property.second);
     units->setQuery(sql);
 
     const int count = units->rowCount();

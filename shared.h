@@ -1,5 +1,5 @@
-#ifndef SHARED_H
-#define SHARED_H
+#pragma once
+
 #include <QMessageBox>
 #include <QString>
 #include <QWidget>
@@ -18,5 +18,3 @@ public:
         }
     }
 };
-
-#endif // SHARED_H

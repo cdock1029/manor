@@ -110,6 +110,7 @@
     <addaction name="action_new_unit"/>
     <addaction name="action_new_tenant"/>
     <addaction name="action_New_Lease"/>
+    <addaction name="separator"/>
     <addaction name="action_quit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -210,6 +211,14 @@
    </property>
    <property name="text">
     <string>Delete Tenant</string>
+   </property>
+  </action>
+  <action name="action_print_table">
+   <property name="icon">
+    <iconset theme="printer"/>
+   </property>
+   <property name="text">
+    <string>Print table</string>
    </property>
   </action>
  </widget>

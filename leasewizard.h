@@ -1,5 +1,4 @@
-#ifndef LEASEWIZARD_H
-#define LEASEWIZARD_H
+#pragma once
 
 #include <QComboBox>
 #include <QLabel>
@@ -51,5 +50,3 @@ private:
 public:
     void initializePage() override;
 };
-
-#endif // LEASEWIZARD_H

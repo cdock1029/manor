@@ -1,5 +1,4 @@
-#ifndef MANOR_H
-#define MANOR_H
+#pragma once
 
 #include <QMainWindow>
 #include <QPointer>
@@ -36,4 +35,3 @@ private:
     QPointer<QSqlTableModel> m_property_model;
     QPointer<QSqlTableModel> m_tenant_model;
 };
-#endif // MANOR_H

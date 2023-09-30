@@ -1,5 +1,4 @@
-#ifndef TENANTDIALOG_H
-#define TENANTDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QSqlTableModel>
@@ -19,5 +18,3 @@ private:
     Ui::TenantDialog* ui;
     QSqlTableModel* m_tenants_model;
 };
-
-#endif // TENANTDIALOG_H

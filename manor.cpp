@@ -8,6 +8,9 @@
 #include <QDoubleSpinBox>
 #include <QInputDialog>
 #include <QItemSelection>
+#include <QPainter>
+#include <QPrintDialog>
+#include <QPrinter>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
@@ -21,8 +24,8 @@ Manor::Manor(QWidget* parent)
     , m_unit_model { new QSqlRelationalTableModel { this } }
     , m_tenant_model { new QSqlTableModel { this } }
 {
-    m_unit_model->setTable(QStringLiteral("units"));
-    m_unit_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    m_unit_model->setTable(u"units"_qs);
+    m_unit_model->setEditStrategy(QSqlTableModel::OnFieldChange);
     m_unit_model->setRelation(2, QSqlRelation("properties", "id", "name"));
 
     m_property_model = m_unit_model->relationModel(Db::UNIT_PROPERTY_ID); // NOLINT(cppcoreguidelines-prefer-member-initializer)
@@ -53,8 +56,8 @@ Manor::~Manor()
 
 void Manor::setup_stack()
 {
-    ui->page_combo->addItem(QStringLiteral("Properties"));
-    ui->page_combo->addItem(QStringLiteral("Tenants"));
+    ui->page_combo->addItem(u"Properties"_qs);
+    ui->page_combo->addItem(u"Tenants"_qs);
 
     ui->stackedWidget->setCurrentIndex(0);
     ui->page_combo->setCurrentIndex(0);
@@ -62,21 +65,76 @@ void Manor::setup_stack()
     connect(ui->page_combo, &QComboBox::activated, ui->stackedWidget, &QStackedWidget::setCurrentIndex);
 }
 
+auto table_to_string(const QTableView& table) -> QString
+{
+    const auto row_count = table.model()->rowCount();
+    const auto col_count = table.model()->columnCount();
+    auto str = QString {};
+    auto out = QTextStream { &str };
+
+    out << "<html>\n"
+           "<head>\n"
+           "<meta Content=\"Text/html; charset=Windows-1251\">\n"
+        << "<title>Table</title>\n"
+        << "</head>\n"
+           "<body bgcolor=#ffffff link=#5000A0>\n"
+           "<table border=1 cellspacing=0 cellpadding=2>\n";
+
+    out << "<thead><tr bgcolor=#f0f0f0>";
+    for (int column = 0; column < col_count; ++column)
+        if (!table.isColumnHidden(column))
+            out << QString("<th>%1</th>").arg(table.model()->headerData(column, Qt::Horizontal).toString());
+    out << "</tr></thead>\n";
+    for (int row = 0; row < row_count; ++row) {
+        out << "<tr>";
+        for (int column = 0; column < col_count; ++column) {
+            if (!table.isColumnHidden(column)) {
+                QString data = table.model()->data(table.model()->index(row, column)).toString().simplified();
+                out << QString("<td bkcolor=0>%1</td>").arg((!data.isEmpty()) ? data : QString("&nbsp;"));
+            }
+        }
+        out << "</tr>\n";
+    }
+    out << "</table>\n"
+           "</body>\n"
+           "</html>\n";
+    return str;
+}
+
 void Manor::setup_property_tabs()
 {
-    QSqlQuery query { QStringLiteral("SELECT * from properties") };
-    int field_no = query.record().indexOf(QStringLiteral("name"));
+    QSqlQuery query { u"SELECT * from properties"_qs };
+    int field_no = query.record().indexOf(u"name"_qs);
     while (query.next()) {
         auto name = query.value(field_no).toString();
-        auto page = new QWidget {};
         auto layout = new QVBoxLayout {};
+        auto page = new QWidget {};
         auto table = new QTableView {};
         table->setModel(m_unit_model);
         table->setItemDelegate(new QSqlRelationalDelegate { table });
         table->hideColumn(0);
         table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
         table->verticalHeader()->setVisible(false);
+        table->setContextMenuPolicy(Qt::CustomContextMenu);
 
+        connect(table, &QTableView::customContextMenuRequested, this, [table, this](QPoint pos) {
+            auto menu = QMenu {};
+            auto action = QAction { u"Print table"_qs };
+            menu.addAction(&action);
+            connect(&action, &QAction::triggered, this, [table, this]() {
+                auto table_string = table_to_string(*table);
+                auto doc = QTextDocument {};
+                doc.setHtml(table_string);
+
+                auto printer = QPrinter { QPrinter::ScreenResolution };
+                printer.setOutputFormat(QPrinter::PdfFormat);
+                auto print_dialog = QPrintDialog { &printer, this };
+                if (print_dialog.exec() == QDialog::Accepted) {
+                    doc.print(&printer);
+                }
+            });
+            menu.exec(table->viewport()->mapToGlobal(pos));
+        });
         layout->addWidget(table);
         page->setLayout(layout);
         ui->tabWidget->addTab(page, name.toUpper());

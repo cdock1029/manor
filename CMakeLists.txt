@@ -12,10 +12,12 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS
-    "-Wall -Wextra -Wconversion -Wshadow -Wpedantic -fsanitize=undefined,address"
-)
+    "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wshadow -Wpedantic")
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Sql)
+add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+add_link_options(-fsanitize=address,undefined)
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets Sql PrintSupport)
 
 qt_add_executable(
   Manor
@@ -37,7 +39,7 @@ qt_add_executable(
 
 qt_add_resources(Manor "images" PREFIX "/" FILES images/napoleon1.png)
 
-target_link_libraries(Manor PRIVATE Qt6::Widgets Qt6::Sql)
+target_link_libraries(Manor PRIVATE Qt6::Widgets Qt6::Sql Qt6::PrintSupport)
 
 set_target_properties(
   Manor
