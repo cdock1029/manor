@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1230</width>
-    <height>716</height>
+    <width>1240</width>
+    <height>800</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,28 +16,6 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="0">
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>Units</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QComboBox" name="page_combo"/>
-       </item>
-       <item>
-        <widget class="QListView" name="units_list_view">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="0" column="1">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
        <number>1</number>
@@ -98,7 +76,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1230</width>
+     <width>1240</width>
      <height>26</height>
     </rect>
    </property>
@@ -215,7 +193,8 @@
   </action>
   <action name="action_print_table">
    <property name="icon">
-    <iconset theme="printer"/>
+    <iconset theme="printer">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Print table</string>

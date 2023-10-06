@@ -25,8 +25,8 @@ inline bool createConnection()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(":memory:");
-    // db.setDatabaseName("manor.db");
     if (!db.open()) {
+        qWarning() << "db error: " << db.lastError();
         QMessageBox::critical(nullptr, "Cannot open database", "Needs SQLite support.", QMessageBox::Cancel);
         return false;
     }
@@ -165,6 +165,26 @@ inline bool createConnection()
         qDebug() << "error leases setup: " << leases.lastError();
         return false;
     }
+
+    QSqlQuery txn_types;
+    txn_types.exec("DROP TABLE IF EXISTS txn_types");
+    txn_types.exec("CREATE TABLE IF NOT EXISTS txn_types ("
+                   "id	        INTEGER,"
+                   "name	    TEXT NOT NULL UNIQUE COLLATE NOCASE,"
+                   "PRIMARY KEY(id))");
+
+    QSqlQuery transactions;
+    transactions.exec("DROP TABLE IF EXISTS transactions");
+    transactions.exec("CREATE TABLE IF NOT EXISTS transactions ("
+                      "id	        INTEGER,"
+                      "date	        TEXT NOT NULL CHECK(date(date) = date),"
+                      "amount	    NUMERIC NOT NULL,"
+                      "note	        TEXT,"
+                      "lease_id	    INTEGER NOT NULL,"
+                      "txn_type_id	INTEGER NOT NULL,"
+                      "FOREIGN KEY(lease_id) REFERENCES leases(id) on delete cascade,"
+                      "FOREIGN KEY(txn_type_id) REFERENCES txn_types(id) on delete cascade,"
+                      "PRIMARY KEY(id))");
 
     return true;
 }

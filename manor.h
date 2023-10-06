@@ -14,6 +14,11 @@ QT_END_NAMESPACE
 class Manor : public QMainWindow {
     Q_OBJECT
 
+    Ui::Manor* ui;
+    QPointer<QSqlRelationalTableModel> m_unit_model;
+    QPointer<QSqlTableModel> m_property_model;
+    QPointer<QSqlTableModel> m_tenant_model;
+
 public:
     explicit Manor(QWidget* parent = nullptr);
     ~Manor() override;
@@ -28,10 +33,4 @@ private:
     void setup_property_tabs();
     void setup_tenants_table();
     void setup_actions();
-
-private:
-    Ui::Manor* ui;
-    QPointer<QSqlRelationalTableModel> m_unit_model;
-    QPointer<QSqlTableModel> m_property_model;
-    QPointer<QSqlTableModel> m_tenant_model;
 };

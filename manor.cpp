@@ -56,13 +56,21 @@ Manor::~Manor()
 
 void Manor::setup_stack()
 {
-    ui->page_combo->addItem(u"Properties"_qs);
-    ui->page_combo->addItem(u"Tenants"_qs);
+    const auto page_combo = new QComboBox { this };
+    page_combo->addItem(u"Properties"_qs);
+    page_combo->addItem(u"Tenants"_qs);
 
     ui->stackedWidget->setCurrentIndex(0);
-    ui->page_combo->setCurrentIndex(0);
+    page_combo->setCurrentIndex(0);
 
-    connect(ui->page_combo, &QComboBox::activated, ui->stackedWidget, &QStackedWidget::setCurrentIndex);
+    const auto spacer = new QWidget { this };
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    ui->toolBar->addSeparator();
+    ui->toolBar->addWidget(spacer);
+    ui->toolBar->addWidget(page_combo);
+
+    connect(page_combo, &QComboBox::activated, ui->stackedWidget, &QStackedWidget::setCurrentIndex);
 }
 
 auto table_to_string(const QTableView& table) -> QString
