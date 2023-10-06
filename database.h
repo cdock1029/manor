@@ -23,8 +23,8 @@ inline constexpr int TENANT_PHONE = 5;
 
 inline bool createConnection()
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(":memory:");
+    QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL");
+    db.setDatabaseName("cdock");
     if (!db.open()) {
         qWarning() << "db error: " << db.lastError();
         QMessageBox::critical(nullptr, "Cannot open database", "Needs SQLite support.", QMessageBox::Cancel);
@@ -83,14 +83,23 @@ inline bool createConnection()
 
     QSqlQuery properties_query;
 
-    properties_query.exec("DROP TABLE IF EXISTS properties");
-    properties_query.exec("CREATE TABLE IF NOT EXISTS properties ("
-                          "id      INTEGER,"
-                          "name	TEXT NOT NULL UNIQUE COLLATE NOCASE,"
-                          "PRIMARY KEY(id))");
+    if (!properties_query.exec("CREATE EXTENSION if not exists citext")) {
+        qDebug() << "error citext: " << properties_query.lastError();
+        return false;
+    }
+    if (!properties_query.exec("DROP TABLE IF EXISTS properties cascade")) {
+        qDebug() << "error drop properties table: " << properties_query.lastError();
+        return false;
+    }
+    if (!properties_query.exec("CREATE TABLE IF NOT EXISTS properties ("
+                               "id      serial,"
+                               "name	citext NOT NULL UNIQUE,"
+                               "PRIMARY KEY(id))")) {
+        qDebug() << "error properties setup: " << properties_query.lastError();
+        return false;
+    }
 
     properties_query.prepare("INSERT INTO properties (name) VALUES (?)");
-    // properties_query.addBindValue(pids);
     properties_query.addBindValue(names);
 
     if (!properties_query.execBatch()) {
@@ -100,14 +109,16 @@ inline bool createConnection()
 
     QSqlQuery units_query;
 
-    units_query.exec("DROP TABLE IF EXISTS units");
-    units_query.exec("CREATE TABLE IF NOT EXISTS units ("
-                     "id	            INTEGER,"
-                     "name	        TEXT NOT NULL COLLATE NOCASE,"
-                     "property_id    INTEGER,"
-                     "UNIQUE(property_id,name),"
-                     "PRIMARY KEY(id),"
-                     "FOREIGN KEY(property_id) REFERENCES properties(id) ON Delete cascade)");
+    units_query.exec("DROP TABLE IF EXISTS units cascade");
+    if (!units_query.exec("CREATE TABLE IF NOT EXISTS units ("
+                          "id               serial,"
+                          "name             citext NOT NULL,"
+                          "property_id      integer references properties(id) on delete cascade,"
+                          "PRIMARY KEY(id),"
+                          "UNIQUE(property_id,name))")) {
+        qDebug() << "error units create table: " << units_query.lastError();
+        return false;
+    }
 
     units_query.prepare("INSERT INTO units (name, property_id) VALUES (?, 1)");
     units_query.addBindValue(colubiana_units);
@@ -126,65 +137,67 @@ inline bool createConnection()
 
     QSqlQuery tenants;
 
-    tenants.exec("DROP TABLE IF EXISTS tenants");
+    tenants.exec("DROP TABLE IF EXISTS tenants cascade");
     tenants.exec("CREATE TABLE IF NOT EXISTS tenants ("
-                 "id INTEGER,"
-                 "first	TEXT NOT NULL COLLATE NOCASE,"
-                 "middle TEXT NOT NULL DEFAULT '' COLLATE NOCASE,"
-                 "last	TEXT NOT NULL COLLATE NOCASE,"
-                 "email	TEXT UNIQUE COLLATE NOCASE,"
-                 "phone	TEXT,"
+                 "id            serial,"
+                 "first	        citext NOT NULL,"
+                 "middle        citext NOT NULL DEFAULT '',"
+                 "last	        citext NOT NULL,"
+                 "email	        citext UNIQUE,"
+                 "phone	        TEXT,"
                  "UNIQUE(last, first, middle),"
                  "PRIMARY KEY(id))");
-    // QString empty = QString();
     tenants.prepare("insert into tenants (first, middle, last) values (?, ?, ?)");
     tenants.addBindValue(QVariantList { "Mona", "Saoirse", "Freya", "Amanda", "Conor" });
     tenants.addBindValue(QVariantList { "Chungus", "Sersh", "Pipsqueak", "Emma", "" });
     QString last { "Dockry" };
     tenants.addBindValue(QVariantList { last, last, last, last, last });
-    // tenants.addBindValue(QVariantList{empty, empty, empty, empty, empty});
     if (!tenants.execBatch()) {
         qDebug() << "error tenants setup batch: " << tenants.lastError();
         return false;
     }
 
     QSqlQuery leases;
-    bool valid = leases.exec("DROP TABLE IF EXISTS leases");
-    valid = valid && leases.exec("CREATE TABLE IF NOT EXISTS leases ("
-                                 "id	        INTEGER,"
-                                 "start	    TEXT NOT NULL CHECK(date(start) = start),"
-                                 "end	    TEXT NOT NULL CHECK(date(end) = end),"
-                                 "rent	    NUMERIC NOT NULL CHECK(rent > 0),"
-                                 "security	NUMERIC,"
-                                 "unit_id	INTEGER NOT NULL,"
-                                 "tenant_id	INTEGER NOT NULL,"
-                                 "FOREIGN KEY(tenant_id) REFERENCES tenants(id) on delete cascade,"
-                                 "FOREIGN KEY(unit_id) REFERENCES units(id) on delete cascade,"
-                                 "PRIMARY KEY(id))");
-    if (!valid) {
+    if (!leases.exec("DROP TABLE IF EXISTS leases cascade")) {
+        qDebug() << "error drop leases table: " << leases.lastError();
+        return false;
+    }
+    if (!leases.exec("CREATE TABLE IF NOT EXISTS leases ("
+                     "id	        serial,"
+                     "start_date	DATE NOT NULL,"
+                     "end_date	    DATE NOT NULL,"
+                     "rent	        money NOT NULL CHECK(rent > '0'::float8::numeric::money),"
+                     "security	    money,"
+                     "unit_id	    INTEGER references units(id) on delete cascade,"
+                     "tenant_id	    INTEGER references tenants(id) on delete cascade,"
+                     "PRIMARY KEY(id))")) {
         qDebug() << "error leases setup: " << leases.lastError();
         return false;
     }
 
     QSqlQuery txn_types;
-    txn_types.exec("DROP TABLE IF EXISTS txn_types");
-    txn_types.exec("CREATE TABLE IF NOT EXISTS txn_types ("
-                   "id	        INTEGER,"
-                   "name	    TEXT NOT NULL UNIQUE COLLATE NOCASE,"
-                   "PRIMARY KEY(id))");
+    txn_types.exec("DROP TABLE IF EXISTS txn_types cascade");
+    if (!txn_types.exec("CREATE TABLE IF NOT EXISTS txn_types ("
+                        "id	        serial,"
+                        "name	    citext NOT NULL UNIQUE,"
+                        "PRIMARY KEY(id))")) {
+        qDebug() << "error txn_types setup: " << txn_types.lastError();
+        return false;
+    }
 
     QSqlQuery transactions;
-    transactions.exec("DROP TABLE IF EXISTS transactions");
-    transactions.exec("CREATE TABLE IF NOT EXISTS transactions ("
-                      "id	        INTEGER,"
-                      "date	        TEXT NOT NULL CHECK(date(date) = date),"
-                      "amount	    NUMERIC NOT NULL,"
-                      "note	        TEXT,"
-                      "lease_id	    INTEGER NOT NULL,"
-                      "txn_type_id	INTEGER NOT NULL,"
-                      "FOREIGN KEY(lease_id) REFERENCES leases(id) on delete cascade,"
-                      "FOREIGN KEY(txn_type_id) REFERENCES txn_types(id) on delete cascade,"
-                      "PRIMARY KEY(id))");
+    transactions.exec("DROP TABLE IF EXISTS transactions cascade");
+    if (!transactions.exec("CREATE TABLE IF NOT EXISTS transactions ("
+                           "id	            serial,"
+                           "txn_date	    DATE NOT NULL,"
+                           "amount	        money NOT NULL,"
+                           "note	        TEXT,"
+                           "lease_id	    INTEGER references leases(id) on delete cascade,"
+                           "txn_type_id	INTEGER references txn_types(id) on delete cascade,"
+                           "PRIMARY KEY(id))")) {
+        qDebug() << "error transactions setup: " << transactions.lastError();
+        return false;
+    }
 
     return true;
 }
