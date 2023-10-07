@@ -11,7 +11,7 @@ class PropertyDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit PropertyDialog(QSqlTableModel* properties, QWidget* parent = nullptr);
+    PropertyDialog(QSqlTableModel* properties, QWidget* parent = nullptr);
     ~PropertyDialog() override;
 
 private:

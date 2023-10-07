@@ -27,14 +27,12 @@ Manor::Manor(QWidget* parent)
     m_unit_model->setTable(u"units"_qs);
     m_unit_model->setEditStrategy(QSqlTableModel::OnFieldChange);
     m_unit_model->setRelation(2, QSqlRelation("properties", "id", "name"));
+    m_unit_model->setHeaderData(1, Qt::Horizontal, u"Unit"_qs);
+    m_unit_model->setHeaderData(2, Qt::Horizontal, u"Property"_qs);
+    m_unit_model->setSort(Db::UNIT_NAME, Qt::AscendingOrder);
 
     m_property_model = m_unit_model->relationModel(Db::UNIT_PROPERTY_ID); // NOLINT(cppcoreguidelines-prefer-member-initializer)
     m_property_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-
-    m_unit_model->setSort(Db::UNIT_NAME, Qt::AscendingOrder);
-    // load units for first property
-    m_unit_model->setFilter("property_id = " + m_property_model->index(0, 0).data().toString());
-    m_unit_model->select();
 
     m_tenant_model->setTable("tenants");
     m_tenant_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -44,6 +42,7 @@ Manor::Manor(QWidget* parent)
     ui->setupUi(this);
 
     setup_stack();
+
     setup_property_tabs();
     setup_tenants_table();
     setup_actions();
@@ -109,10 +108,17 @@ auto table_to_string(const QTableView& table) -> QString
     return str;
 }
 
-void Manor::setup_property_tabs()
+void Manor::setup_property_tabs(int active_tab)
 {
+    qDebug() << "setup_property_tabs active_tab: " << active_tab;
+    ui->tabWidget->disconnect();
+    while (ui->tabWidget->count()) {
+        delete ui->tabWidget->widget(0);
+    }
+    ui->tabWidget->clear();
+
     QSqlQuery query { u"SELECT * from properties"_qs };
-    int field_no = query.record().indexOf(u"name"_qs);
+    const int field_no = query.record().indexOf(u"name"_qs);
     while (query.next()) {
         auto name = query.value(field_no).toString();
         auto layout = new QVBoxLayout {};
@@ -151,6 +157,12 @@ void Manor::setup_property_tabs()
         const auto idx = m_property_model->index(tab, 0);
         m_unit_model->setFilter("property_id = " + idx.data().toString());
     });
+    m_unit_model->select();
+    if (active_tab != ui->tabWidget->currentIndex()) {
+        ui->tabWidget->setCurrentIndex(active_tab);
+    } else {
+        emit ui->tabWidget->currentChanged(active_tab);
+    }
 }
 
 void Manor::setup_tenants_table()
@@ -209,6 +221,7 @@ void Manor::setup_actions()
             if (button == QMessageBox::Yes) {
                 m_property_model->removeRow(idx.row());
                 m_property_model->submitAll();
+                setup_property_tabs();
             }
         }
     });
@@ -222,6 +235,9 @@ void Manor::setup_actions()
 void Manor::add_property()
 {
     auto dialog = QPointer { new PropertyDialog { m_property_model, this } };
+    connect(dialog, &QDialog::accepted, this, [this]() {
+        setup_property_tabs(ui->tabWidget->count());
+    });
     dialog->open();
 }
 

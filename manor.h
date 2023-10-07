@@ -18,6 +18,7 @@ class Manor : public QMainWindow {
     QPointer<QSqlRelationalTableModel> m_unit_model;
     QPointer<QSqlTableModel> m_property_model;
     QPointer<QSqlTableModel> m_tenant_model;
+    QPointer<QSqlQueryModel> m_query_model;
 
 public:
     explicit Manor(QWidget* parent = nullptr);
@@ -30,7 +31,7 @@ private slots:
 
 private:
     void setup_stack();
-    void setup_property_tabs();
+    void setup_property_tabs(int active_tab = 0);
     void setup_tenants_table();
     void setup_actions();
 };

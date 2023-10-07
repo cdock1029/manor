@@ -24,12 +24,23 @@ inline constexpr int TENANT_PHONE = 5;
 inline bool createConnection()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL");
-    db.setDatabaseName("cdock");
+    // db.setDatabaseName("ggqhunig");
+    // db.setHostName("peanut.db.elephantsql.com");
+    // db.setUserName("ggqhunig");
+    // db.setPassword("Fe7dnm9rja_FtcISWK62n9sD6IrF1kPN");
+
+    db.setDatabaseName("neondb");
+    db.setHostName("ep-fancy-sunset-71179665.us-east-2.aws.neon.tech");
+    db.setUserName("cdock1029");
+    db.setPassword("OvCwSI2QHc7y");
+
     if (!db.open()) {
         qWarning() << "db error: " << db.lastError();
         QMessageBox::critical(nullptr, "Cannot open database", "Needs SQLite support.", QMessageBox::Cancel);
         return false;
     }
+    /*
+
     QVariantList names { "Columbiana Manor", "WT Investments" };
     QVariantList wt_units {
         "C100",
@@ -198,6 +209,7 @@ inline bool createConnection()
         qDebug() << "error transactions setup: " << transactions.lastError();
         return false;
     }
+    */
 
     return true;
 }
