@@ -1,17 +1,17 @@
 ﻿#include "manor.h"
 #include "./ui_manor.h"
-#include "database.h"
 #include "leasewizard.h"
 #include "propertydialog.h"
-#include "shared.h"
 #include "tenantdialog.h"
 #include <QDoubleSpinBox>
 #include <QInputDialog>
 #include <QItemSelection>
+#include <QMessageBox>
 #include <QPainter>
 #include <QPrintDialog>
 #include <QPrinter>
 #include <QSqlError>
+#include <QSqlField>
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlRelationalDelegate>
@@ -21,18 +21,13 @@
 Manor::Manor(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::Manor)
-    , m_unit_model { new QSqlRelationalTableModel { this } }
+    , m_property_model { new QSqlTableModel { this } }
     , m_tenant_model { new QSqlTableModel { this } }
 {
-    m_unit_model->setTable(u"units"_qs);
-    m_unit_model->setEditStrategy(QSqlTableModel::OnFieldChange);
-    m_unit_model->setRelation(2, QSqlRelation("properties", "id", "name"));
-    m_unit_model->setHeaderData(1, Qt::Horizontal, u"Unit"_qs);
-    m_unit_model->setHeaderData(2, Qt::Horizontal, u"Property"_qs);
-    m_unit_model->setSort(Db::UNIT_NAME, Qt::AscendingOrder);
 
-    m_property_model = m_unit_model->relationModel(Db::UNIT_PROPERTY_ID); // NOLINT(cppcoreguidelines-prefer-member-initializer)
+    m_property_model->setTable("properties");
     m_property_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    m_property_model->select();
 
     m_tenant_model->setTable("tenants");
     m_tenant_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -117,19 +112,21 @@ void Manor::setup_property_tabs(int active_tab)
     }
     ui->tabWidget->clear();
 
-    QSqlQuery query { u"SELECT * from properties"_qs };
-    const int field_no = query.record().indexOf(u"name"_qs);
-    while (query.next()) {
-        auto name = query.value(field_no).toString();
+    // m_unit_model->setQuery(u"SELECT * FROM active_leases WHERE property_id = %1"_qs.arg());
+    for (auto i = 0; i < m_property_model->rowCount(); ++i) {
         auto layout = new QVBoxLayout {};
         auto page = new QWidget {};
         auto table = new QTableView {};
-        table->setModel(m_unit_model);
-        table->setItemDelegate(new QSqlRelationalDelegate { table });
+        auto active_leases = new QSqlQueryModel { page };
+        active_leases->setQuery(u"SELECT * FROM active_leases WHERE property_id = %1"_qs.arg(m_property_model->index(i, 0).data().toInt()));
+        table->setModel(active_leases);
         table->hideColumn(0);
+        table->hideColumn(8);
+        table->hideColumn(9);
         table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
         table->verticalHeader()->setVisible(false);
         table->setContextMenuPolicy(Qt::CustomContextMenu);
+        table->setSelectionBehavior(QAbstractItemView::SelectRows);
 
         connect(table, &QTableView::customContextMenuRequested, this, [table, this](QPoint pos) {
             auto menu = QMenu {};
@@ -151,17 +148,10 @@ void Manor::setup_property_tabs(int active_tab)
         });
         layout->addWidget(table);
         page->setLayout(layout);
+
+        const auto record = m_property_model->record(i);
+        const auto name = record.field(u"name"_qs).value().toString();
         ui->tabWidget->addTab(page, name.toUpper());
-    }
-    connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int tab) {
-        const auto idx = m_property_model->index(tab, 0);
-        m_unit_model->setFilter("property_id = " + idx.data().toString());
-    });
-    m_unit_model->select();
-    if (active_tab != ui->tabWidget->currentIndex()) {
-        ui->tabWidget->setCurrentIndex(active_tab);
-    } else {
-        emit ui->tabWidget->currentChanged(active_tab);
     }
 }
 
@@ -204,7 +194,7 @@ void Manor::setup_actions()
         this->close();
     });
     connect(ui->action_new_property, &QAction::triggered, this, &Manor::add_property);
-    connect(ui->action_new_unit, &QAction::triggered, this, &Manor::add_unit);
+    // connect(ui->action_new_unit, &QAction::triggered, this, &Manor::add_unit);
     connect(ui->action_new_tenant, &QAction::triggered, this, &Manor::add_tenant);
 
     connect(ui->action_delete_property, &QAction::triggered, this, [=, this]() {
@@ -247,6 +237,7 @@ void Manor::add_tenant()
     dialog->open();
 }
 
+/*
 void Manor::add_unit()
 {
     auto combo_index = ui->tabWidget->currentIndex();
@@ -284,3 +275,4 @@ void Manor::add_unit()
         }
     }
 }
+*/
