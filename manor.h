@@ -17,6 +17,7 @@ class Manor : public QMainWindow {
     Ui::Manor* ui;
     QPointer<QSqlTableModel> m_property_model;
     QPointer<QSqlTableModel> m_tenant_model;
+    QPointer<QSqlQueryModel> m_active_leases_model;
 
 public:
     explicit Manor(QWidget* parent = nullptr);

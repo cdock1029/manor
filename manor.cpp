@@ -1,5 +1,6 @@
 ﻿#include "manor.h"
 #include "./ui_manor.h"
+#include "database.h"
 #include "leasewizard.h"
 #include "propertydialog.h"
 #include "tenantdialog.h"
@@ -10,6 +11,7 @@
 #include <QPainter>
 #include <QPrintDialog>
 #include <QPrinter>
+#include <QSortFilterProxyModel>
 #include <QSqlError>
 #include <QSqlField>
 #include <QSqlQuery>
@@ -17,14 +19,15 @@
 #include <QSqlRelationalDelegate>
 #include <QStackedWidget>
 #include <QWizard>
+#include <utility>
 
 Manor::Manor(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::Manor)
     , m_property_model { new QSqlTableModel { this } }
     , m_tenant_model { new QSqlTableModel { this } }
+    , m_active_leases_model { new QSqlQueryModel { this } }
 {
-
     m_property_model->setTable("properties");
     m_property_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     m_property_model->select();
@@ -32,7 +35,6 @@ Manor::Manor(QWidget* parent)
     m_tenant_model->setTable("tenants");
     m_tenant_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     m_tenant_model->setSort(3, Qt::AscendingOrder);
-    m_tenant_model->select();
 
     ui->setupUi(this);
 
@@ -65,6 +67,18 @@ void Manor::setup_stack()
     ui->toolBar->addWidget(page_combo);
 
     connect(page_combo, &QComboBox::activated, ui->stackedWidget, &QStackedWidget::setCurrentIndex);
+    connect(ui->stackedWidget, &QStackedWidget::currentChanged, this, [this](int index) {
+        switch (index) {
+        case 0:
+            break;
+        case 1:
+            m_tenant_model->select();
+            break;
+        default:
+            qWarning() << "unknown stack index: " << index;
+            break;
+        }
+    });
 }
 
 auto table_to_string(const QTableView& table) -> QString
@@ -76,7 +90,7 @@ auto table_to_string(const QTableView& table) -> QString
 
     out << "<html>\n"
            "<head>\n"
-           "<meta Content=\"Text/html; charset=Windows-1251\">\n"
+           "<meta Content=\"text/html; charset=Windows-1251\">\n"
         << "<title>Table</title>\n"
         << "</head>\n"
            "<body bgcolor=#ffffff link=#5000A0>\n"
@@ -105,24 +119,22 @@ auto table_to_string(const QTableView& table) -> QString
 
 void Manor::setup_property_tabs(int active_tab)
 {
-    qDebug() << "setup_property_tabs active_tab: " << active_tab;
     ui->tabWidget->disconnect();
     while (ui->tabWidget->count()) {
         delete ui->tabWidget->widget(0);
     }
     ui->tabWidget->clear();
 
-    // m_unit_model->setQuery(u"SELECT * FROM active_leases WHERE property_id = %1"_qs.arg());
     for (auto i = 0; i < m_property_model->rowCount(); ++i) {
         auto layout = new QVBoxLayout {};
         auto page = new QWidget {};
         auto table = new QTableView {};
-        auto active_leases = new QSqlQueryModel { page };
-        active_leases->setQuery(u"SELECT * FROM active_leases WHERE property_id = %1"_qs.arg(m_property_model->index(i, 0).data().toInt()));
-        table->setModel(active_leases);
-        table->hideColumn(0);
-        table->hideColumn(8);
-        table->hideColumn(9);
+
+        const auto proxy_model = new QSortFilterProxyModel { this };
+        proxy_model->setSourceModel(m_active_leases_model);
+        table->setModel(proxy_model);
+
+        table->setSortingEnabled(true);
         table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
         table->verticalHeader()->setVisible(false);
         table->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -152,6 +164,31 @@ void Manor::setup_property_tabs(int active_tab)
         const auto record = m_property_model->record(i);
         const auto name = record.field(u"name"_qs).value().toString();
         ui->tabWidget->addTab(page, name.toUpper());
+    }
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
+        const auto property_id = m_property_model->index(index, 0).data().toInt();
+        QSqlQuery query;
+        query.prepare(u"SELECT * FROM active_leases WHERE property_id = :property_id"_qs);
+        query.bindValue(u":property_id"_qs, property_id);
+        query.exec();
+        m_active_leases_model->setQuery(std::move(query));
+
+        const auto tab_widget = qobject_cast<QTabWidget*>(sender());
+        const auto page = tab_widget->currentWidget();
+        const auto layout = qobject_cast<QVBoxLayout*>(page->layout());
+        const auto table = qobject_cast<QTableView*>(layout->itemAt(0)->widget());
+        const auto model = qobject_cast<QSortFilterProxyModel*>(table->model());
+        // override default sort column 0, just display data as queried (view already orders by unit)
+        model->sort(-1);
+
+        table->hideColumn(0);
+        table->hideColumn(Db::ACTIVE_LEASES_LEASE_ID);
+        table->hideColumn(Db::ACTIVE_LEASES_PROPERTY_ID);
+    });
+    if (ui->tabWidget->currentIndex() != active_tab) {
+        ui->tabWidget->setCurrentIndex(active_tab);
+    } else {
+        emit ui->tabWidget->currentChanged(active_tab);
     }
 }
 
