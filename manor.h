@@ -11,7 +11,7 @@ class Manor;
 }
 QT_END_NAMESPACE
 
-class Manor : public QMainWindow {
+class Manor : public QMainWindow { // NOLINT(*-special-member-functions)
     Q_OBJECT
 
     Ui::Manor* ui;
@@ -23,12 +23,10 @@ public:
     explicit Manor(QWidget* parent = nullptr);
     ~Manor() override;
 
-private slots:
-    void add_property();
-    // void add_unit();
+private:
+    Q_SLOT
     void add_tenant();
 
-private:
     void setup_stack();
     void setup_property_tabs(int active_tab = 0);
     void setup_tenants_table();

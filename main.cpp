@@ -5,10 +5,11 @@
 
 int main(int argc, char* argv[])
 {
-    QApplication a(argc, argv);
+    const QApplication a(argc, argv);
 
-    if (!Db::createConnection())
+    if (!Db::createConnection()) {
         return EXIT_FAILURE;
+    }
 
     Manor w;
     w.show();

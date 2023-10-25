@@ -37,7 +37,7 @@ TenantDialog::TenantDialog(QSqlTableModel* tenants, QWidget* parent)
             record.setNull(Db::TENANT_EMAIL);
             record.setNull(Db::TENANT_PHONE);
             m_tenants_model->insertRecord(-1, record);
-            bool submitted = m_tenants_model->submitAll();
+            const bool submitted = m_tenants_model->submitAll();
             auto new_id = m_tenants_model->query().lastInsertId().toInt();
             if (submitted && new_id > 0) {
                 qDebug() << "tenant created, id: " << new_id;

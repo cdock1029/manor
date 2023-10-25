@@ -7,7 +7,7 @@ namespace Ui {
 class TenantDialog;
 }
 
-class TenantDialog : public QDialog {
+class TenantDialog : public QDialog { // NOLINT(*-special-member-functions)
     Q_OBJECT
 
 public:

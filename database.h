@@ -36,7 +36,7 @@ inline bool createConnection()
         QMessageBox::critical(nullptr, "Cannot open database", "Database Error.", QMessageBox::Cancel);
         return false;
     }
-
+    /*
     QVariantList names { "Columbiana Manor", "WT Investments" };
     QVariantList wt_units;
     wt_units << "A100"
@@ -235,7 +235,7 @@ inline bool createConnection()
         qDebug() << "error active_lease view setup: " << active_leases.lastError();
         return false;
     }
-
+    */
     return true;
 }
 }

@@ -11,6 +11,7 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS
     "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wshadow -Wpedantic")
 
@@ -27,9 +28,6 @@ qt_add_executable(
   manor.h
   database.h
   manor.ui
-  propertydialog.h
-  propertydialog.cpp
-  propertydialog.ui
   shared.h
   tenantdialog.h
   tenantdialog.cpp
@@ -50,6 +48,7 @@ set_target_properties(
              MACOSX_BUNDLE TRUE
              WIN32_EXECUTABLE TRUE)
 
+include(GNUInstallDirs)
 install(
   TARGETS Manor
   BUNDLE DESTINATION .

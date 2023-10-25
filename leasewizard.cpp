@@ -1,13 +1,20 @@
 #include "leasewizard.h"
-
 #include <QGridLayout>
+#include <QSqlField>
 #include <QSqlQueryModel>
 #include <QSqlRecord>
 
-const QString LeaseWizard::PROPERTY_FIELD = u"property_selection"_qs;
-const QString LeaseWizard::UNIT_FIELD = u"unit_selection"_qs;
+using namespace Qt::StringLiterals;
 
-using ComboPair = QPair<QString, int>;
+const QString PROPERTY_FIELD = u"property_selection"_s;
+const QString UNIT_FIELD = u"unit_selection"_s;
+const QString TENANT_FIELD = u"tenant_selection"_s;
+
+struct ComboPair {
+    QString name {};
+    int id {};
+};
+Q_DECLARE_METATYPE(ComboPair)
 
 LeaseWizard::LeaseWizard(QWidget* parent)
     : QWizard(parent)
@@ -19,77 +26,174 @@ LeaseWizard::LeaseWizard(QWidget* parent)
 
     setDefaultProperty("QComboBox", "currentData", SIGNAL(currentIndexChanged(int)));
 
-    addPage(new PropertyPage { this }); // NOLINT
+    addPage(new PropertyPage { this });
     addPage(new UnitPage { this });
+    addPage(new TenantPage { this });
+    addPage(new LeaseDetailsPage { this });
     addPage(new FinalPage { this });
 }
 
 PropertyPage::PropertyPage(QWidget* parent)
     : QWizardPage(parent)
-    , m_properties { new QComboBox { this } }
+    , m_property_combo { new QComboBox { this } }
 {
     setTitle("Property selection");
     setSubTitle("Select a property for the lease");
 
-    m_properties->setPlaceholderText("Choose property");
+    m_property_combo->setPlaceholderText("Choose property");
 
-    auto properties = QPointer { new QSqlQueryModel { this } };
-    properties->setQuery(u"SELECT id, name FROM properties order by name asc"_qs);
+    auto* properties = new QSqlQueryModel { this };
+    properties->setQuery(u"SELECT id, name FROM properties order by name asc"_s);
 
     const int count = properties->rowCount();
     for (int i = 0; i < count; ++i) {
         auto id = properties->record(i).value(0).toInt();
         auto name = properties->record(i).value(1).toString();
-        m_properties->insertItem(count, name, QVariant::fromValue(ComboPair { name, id }));
+        m_property_combo->insertItem(count, name, QVariant::fromValue(ComboPair { name, id }));
     }
 
-    registerField(LeaseWizard::PROPERTY_FIELD + "*", m_properties);
+    registerField(PROPERTY_FIELD + "*", m_property_combo);
 
     auto layout = QPointer { new QGridLayout { this } };
-    layout->addWidget(m_properties);
+    layout->addWidget(m_property_combo);
     setLayout(layout);
 }
 
 UnitPage::UnitPage(QWidget* parent)
     : QWizardPage(parent)
-    , m_units { new QComboBox { this } }
+    , m_units_combo { new QComboBox { this } }
     , m_selected_property { new QLabel { this } }
 {
     setTitle("Unit selection");
     setSubTitle("Select the unit for the lease");
 
-    m_units->setPlaceholderText("Choose unit");
+    m_units_combo->setPlaceholderText("Choose unit");
 
-    registerField(LeaseWizard::UNIT_FIELD + "*", m_units);
+    registerField(UNIT_FIELD + "*", m_units_combo);
 
-    auto layout = QPointer { new QGridLayout { this } };
+    auto* layout = new QGridLayout { this };
     layout->addWidget(m_selected_property);
-    layout->addWidget(m_units);
+    layout->addWidget(m_units_combo);
     setLayout(layout);
 }
 
 void UnitPage::initializePage()
 {
-    ComboPair property = field(LeaseWizard::PROPERTY_FIELD).value<ComboPair>();
+    auto property = field(PROPERTY_FIELD).value<ComboPair>();
 
-    auto units = QPointer { new QSqlQueryModel { this } };
-    auto sql = QString(u"SELECT id, name FROM units where property_id = %1 order by name asc"_qs).arg(property.second);
-    units->setQuery(sql);
+    auto* units = new QSqlQueryModel { this };
+    units->setQuery(u"SELECT id, name FROM units where property_id = %1 order by name asc"_s.arg(property.id));
 
-    const int count = units->rowCount();
-    for (int i = 0; i < count; ++i) {
+    // clear the combo box for when using the back button
+    m_units_combo->clear();
+    for (int i = 0; i < units->rowCount(); ++i) {
         auto id = units->record(i).value(0).toInt();
         auto name = units->record(i).value(1).toString();
-        m_units->insertItem(count, name, QVariant::fromValue(ComboPair { name, id }));
+        m_units_combo->insertItem(units->rowCount(), name, QVariant::fromValue(ComboPair { name, id }));
     }
+    m_selected_property->setText(property.name);
+}
 
-    m_selected_property->setText(property.first);
+TenantPage::TenantPage(QWidget* parent)
+    : QWizardPage(parent)
+    , m_tenants_combo { new QComboBox { this } }
+    , m_selected_property { new QLabel { this } }
+    , m_selected_unit { new QLabel { this } }
+{
+    setTitle("Tenant selecion");
+    setSubTitle("Select tenant for the lease");
+
+    m_tenants_combo->setPlaceholderText("Choose tenant");
+    registerField(TENANT_FIELD + "*", m_tenants_combo);
+    auto* layout = new QGridLayout { this };
+    layout->addWidget(m_selected_property);
+    layout->addWidget(m_selected_unit);
+    layout->addWidget(m_tenants_combo);
+    setLayout(layout);
+}
+
+void TenantPage::initializePage()
+{
+    auto property = field(PROPERTY_FIELD).value<ComboPair>();
+    auto unit = field(UNIT_FIELD).value<ComboPair>();
+    auto* tenants = new QSqlQueryModel { this };
+    tenants->setQuery(u"SELECT id, first, middle, last from tenants order by last asc"_s);
+    m_tenants_combo->clear();
+    for (int i = 0; i < tenants->rowCount(); ++i) {
+        auto id = tenants->record(i).value(0).toInt();
+        auto first = tenants->record(i).value(1).toString();
+        auto middle = tenants->record(i).value(2).toString();
+        auto last = tenants->record(i).value(3).toString();
+        auto name = middle.isEmpty() ? QString("%1 %2").arg(first, last) : QString("%1 %2 %3").arg(first, middle, last);
+        m_tenants_combo->insertItem(tenants->rowCount(), name, QVariant::fromValue(ComboPair { name, id }));
+    }
+    m_selected_property->setText(property.name);
+    m_selected_unit->setText(unit.name);
+}
+
+LeaseDetailsPage::LeaseDetailsPage(QWidget* parent)
+    : QWizardPage(parent)
+    , m_start_date { new QCalendarWidget { this } }
+    , m_end_date { new QCalendarWidget { this } }
+    , m_rent { new QLineEdit { this } }
+    , m_security { new QLineEdit { this } }
+{
+    setTitle("Lease details");
+    setSubTitle("Enter lease details");
+
+    m_start_date->setToolTip(u"Start Date"_s);
+    m_start_date->setSelectedDate(QDate::currentDate());
+
+    auto date_handler = [this](QDate start_date) {
+        const QPointer<QCalendarWidget> calendar = qobject_cast<QCalendarWidget*>(sender());
+        const auto index = senderSignalIndex();
+        qInfo() << "handler index:" << index << ",Start date:" << start_date;
+        m_end_date->setSelectedDate(start_date.addYears(1));
+        m_end_date->setMinimumDate(start_date.addMonths(1));
+    };
+
+    connect(m_start_date, &QCalendarWidget::clicked, this, date_handler);
+    connect(m_start_date, &QCalendarWidget::activated, this, date_handler);
+
+    m_end_date->setToolTip(u"End Date"_s);
+    m_end_date->setSelectedDate(QDate::currentDate().addYears(1));
+
+    registerField("start_date*", m_start_date);
+    registerField("end_date*", m_end_date);
+    registerField("rent*", m_rent);
+    registerField("security*", m_security);
+
+    auto layout = QPointer { new QGridLayout { this } };
+
+    layout->addWidget(new QLabel { "Start Date", this }, 0, 0);
+    layout->addWidget(m_start_date, 1, 0);
+
+    layout->addWidget(new QLabel { "End Date", this }, 0, 1);
+    layout->addWidget(m_end_date, 1, 1);
+
+    layout->addWidget(new QLabel { "Enter monthly rent", this }, 2, 0);
+    layout->addWidget(m_rent, 2, 1);
+
+    layout->addWidget(new QLabel { "Enter security deposit", this }, 3, 0);
+    layout->addWidget(m_security, 3, 1);
+
+    setLayout(layout);
+}
+
+void LeaseDetailsPage::initializePage()
+{
+}
+
+bool LeaseDetailsPage::validatePage()
+{
+    return true;
 }
 
 FinalPage::FinalPage(QWidget* parent)
     : QWizardPage(parent)
     , m_selected_property { new QLabel { this } }
     , m_selected_unit { new QLabel { this } }
+    , m_selected_tenant { new QLabel { this } }
 {
     setTitle("Summary");
     setSubTitle("Confirm details of lease");
@@ -97,13 +201,16 @@ FinalPage::FinalPage(QWidget* parent)
     auto layout = QPointer { new QGridLayout { this } };
     layout->addWidget(m_selected_property);
     layout->addWidget(m_selected_unit);
+    layout->addWidget(m_selected_tenant);
     setLayout(layout);
 }
 
 void FinalPage::initializePage()
 {
-    auto property = field(LeaseWizard::PROPERTY_FIELD).value<ComboPair>();
-    auto unit = field(LeaseWizard::UNIT_FIELD).value<ComboPair>();
-    m_selected_property->setText(property.first);
-    m_selected_unit->setText(unit.first);
+    auto property = field(PROPERTY_FIELD).value<ComboPair>();
+    auto unit = field(UNIT_FIELD).value<ComboPair>();
+    auto tenant = field(TENANT_FIELD).value<ComboPair>();
+    m_selected_property->setText(property.name);
+    m_selected_unit->setText(unit.name);
+    m_selected_tenant->setText(tenant.name);
 }
