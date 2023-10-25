@@ -17,7 +17,7 @@ public:
 class PropertyPage : public QWizardPage {
     Q_OBJECT
 
-    QComboBox* m_property_combo;
+    QComboBox m_property_combo;
 
 public:
     explicit PropertyPage(QWidget* parent = nullptr);
@@ -26,8 +26,8 @@ public:
 class UnitPage : public QWizardPage {
     Q_OBJECT
 
-    QComboBox* m_units_combo;
-    QLabel* m_selected_property;
+    QComboBox m_units_combo;
+    QLabel m_selected_property;
 
 public:
     explicit UnitPage(QWidget* parent = nullptr);
@@ -39,9 +39,9 @@ public:
 class TenantPage : public QWizardPage {
     Q_OBJECT
 
-    QComboBox* m_tenants_combo;
-    QLabel* m_selected_property;
-    QLabel* m_selected_unit;
+    QComboBox m_tenants_combo;
+    QLabel m_selected_property;
+    QLabel m_selected_unit;
 
 public:
     explicit TenantPage(QWidget* parent = nullptr);
@@ -59,6 +59,8 @@ class LeaseDetailsPage : public QWizardPage {
     QLineEdit* m_rent;
     QLineEdit* m_security;
 
+    inline static constexpr double MAX_MONTHLY_RENT = 99999.99;
+
 public:
     explicit LeaseDetailsPage(QWidget* parent = nullptr);
 
@@ -70,9 +72,13 @@ public:
 class FinalPage : public QWizardPage {
     Q_OBJECT
 
-    QLabel* m_selected_property;
-    QLabel* m_selected_unit;
-    QLabel* m_selected_tenant;
+    QLabel m_selected_property;
+    QLabel m_selected_unit;
+    QLabel m_selected_tenant;
+    QLabel m_start;
+    QLabel m_end;
+    QLabel m_rent;
+    QLabel m_security;
 
 public:
     explicit FinalPage(QWidget* parent = nullptr);
