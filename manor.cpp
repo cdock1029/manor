@@ -2,6 +2,7 @@
 #include "./ui_manor.h"
 #include "database.h"
 #include "leasewizard.h"
+#include "qnamespace.h"
 #include "tenantdialog.h"
 #include <QDoubleSpinBox>
 #include <QInputDialog>
@@ -18,20 +19,14 @@
 #include <QSqlRelationalDelegate>
 #include <QStackedWidget>
 #include <QWizard>
-#include <utility>
 
 using namespace Qt::StringLiterals;
 
 Manor::Manor(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::Manor)
-    , m_property_model { new QSqlTableModel { this } }
     , m_tenant_model { new QSqlTableModel { this } }
-    , m_active_leases_model { new QSqlQueryModel { this } }
 {
-    m_property_model->setTable("properties");
-    m_property_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    m_property_model->select();
 
     m_tenant_model->setTable("tenants");
     m_tenant_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -120,28 +115,38 @@ auto table_to_string(const QTableView& table) -> QString
     return str;
 }
 
-void Manor::setup_property_tabs(int active_tab)
+void Manor::setup_property_tabs()
 {
-    ui->tabWidget->disconnect();
-    while (ui->tabWidget->count() != 0) {
-        delete ui->tabWidget->widget(0);
-    }
-    ui->tabWidget->clear();
+    QSqlQuery query { u"SELECT * FROM properties"_s };
+    auto properties_model = QSqlQueryModel {};
+    properties_model.setQuery(std::move(query));
 
-    for (auto i = 0; i < m_property_model->rowCount(); ++i) {
-        auto* layout = new QVBoxLayout {};
-        auto* page = new QWidget {};
-        auto* table = new QTableView {};
+    for (auto i = 0; i < properties_model.rowCount(); ++i) {
+        const auto property_name = properties_model.record(i).field("name").value().toString();
+        const auto property_id = properties_model.record(i).field("id").value().toInt();
 
-        auto* const proxy_model = new QSortFilterProxyModel { this };
-        proxy_model->setSourceModel(m_active_leases_model);
-        table->setModel(proxy_model);
+        auto* page = new QWidget { ui->tabWidget };
+        auto* layout = new QVBoxLayout { page };
+        auto* table = new QTableView { page };
 
-        table->setSortingEnabled(true);
         table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
         table->verticalHeader()->setVisible(false);
         table->setContextMenuPolicy(Qt::CustomContextMenu);
         table->setSelectionBehavior(QAbstractItemView::SelectRows);
+        table->setSortingEnabled(true);
+
+        auto* const query_model = new QSqlQueryModel { table };
+        query_model->setQuery(QSqlQuery { u"SELECT * FROM active_leases WHERE property_id = %1"_s.arg(property_id) });
+        auto* const proxy_model = new QSortFilterProxyModel { this };
+        proxy_model->setSourceModel(query_model);
+
+        table->setModel(proxy_model);
+        table->hideColumn(0);
+        table->hideColumn(Db::ACTIVE_LEASES_LEASE_ID);
+        table->hideColumn(Db::ACTIVE_LEASES_PROPERTY_ID);
+
+        // override default sort column 0,db already sorts
+        table->sortByColumn(-1, Qt::AscendingOrder);
 
         connect(table,
             &QTableView::customContextMenuRequested,
@@ -167,35 +172,7 @@ void Manor::setup_property_tabs(int active_tab)
         layout->addWidget(table);
         page->setLayout(layout);
 
-        const auto record = m_property_model->record(i);
-        const auto name = record.field(u"name"_s).value().toString();
-        ui->tabWidget->addTab(page, name.toUpper());
-    }
-    connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int index) {
-        const auto property_id = m_property_model->index(index, 0).data().toInt();
-        QSqlQuery query;
-        query.prepare(u"SELECT * FROM active_leases WHERE property_id = :property_id"_s);
-        query.bindValue(u":property_id"_s, property_id);
-        query.exec();
-        m_active_leases_model->setQuery(std::move(query));
-
-        auto* const tab_widget = qobject_cast<QTabWidget*>(sender());
-        auto* const page = tab_widget->currentWidget();
-        auto* const layout = qobject_cast<QVBoxLayout*>(page->layout());
-        auto* const table = qobject_cast<QTableView*>(layout->itemAt(0)->widget());
-        auto* const model = qobject_cast<QSortFilterProxyModel*>(table->model());
-        // override default sort column 0, just display data as queried (view
-        // already orders by unit)
-        model->sort(-1);
-
-        table->hideColumn(0);
-        table->hideColumn(Db::ACTIVE_LEASES_LEASE_ID);
-        table->hideColumn(Db::ACTIVE_LEASES_PROPERTY_ID);
-    });
-    if (ui->tabWidget->currentIndex() != active_tab) {
-        ui->tabWidget->setCurrentIndex(active_tab);
-    } else {
-        emit ui->tabWidget->currentChanged(active_tab);
+        ui->tabWidget->addTab(page, property_name.toUpper());
     }
 }
 
